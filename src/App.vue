@@ -148,12 +148,17 @@
 						class="mt-3 ms-2 rounded-lg border-2 grow text-4xl leading-loose"
 						@click="toggleOutputActivation" v-html="isOutputActive ? '输出<br>已激活' : '输出<br>已关闭'"></button>
 				</div>
+				<!-- 添加图表容器 -->
+				<div class="mt-4">
+					<div id="powerChart" style="width: 100%; height: 300px;"></div>
+				</div>
 			</div>
 		</div>
 	</body>
 </template>
 
 <script>
+import * as echarts from 'echarts'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
 import axios from 'axios'
@@ -196,6 +201,14 @@ export default {
 			voltageUpdateTimeout: null,  // 添加电压防抖定时器
 			currentUpdateTimeout: null,   // 添加电流防抖定时器
 			isRefreshing: false, // 添加标识符表示是否正在刷新中
+			chart: null,
+			chartData: {
+				timestamps: [],
+				voltages: [],
+				currents: [],
+				powers: []
+			},
+			maxDataPoints: 100, // 最多显示100个数据点
 		}
 	},
 	async mounted() {
@@ -203,6 +216,7 @@ export default {
 		await this.loadInitialData();
 		// 启动定时更新
 		// this.updateInterval = setInterval(this.updateOutputStatus, 3000);
+		this.initChart();
 	},
 	beforeUnmount() {
 		// 清理定时器
@@ -213,6 +227,9 @@ export default {
 			clearInterval(this.refreshInterval);
 		}
 		this.isAutoRefreshing = false; // 确保组件销毁时停止刷新
+		if (this.chart) {
+			this.chart.dispose();
+		}
 	},
 	watch: {
 		// ...其他 watch 保持不变...
@@ -428,6 +445,7 @@ export default {
 			
 			try {
 				await this.updateOutputStatus();
+				this.updateChartData(); // 添加这行来更新图表
 				// 如果仍然开启自动刷新,立即开始下一次刷新
 				if (this.isAutoRefreshing) {
 					this.executeAutoRefresh();
@@ -579,6 +597,134 @@ export default {
 				console.error('Failed to sync system status:', error);
 			}
 		},
+
+		initChart() {
+			this.chart = echarts.init(document.getElementById('powerChart'));
+			const option = {
+				title: {
+					text: '实时监测数据',
+					left: 'center'
+				},
+				tooltip: {
+					trigger: 'axis',
+					axisPointer: {
+						type: 'line'
+					}
+				},
+				legend: {
+					data: ['电压(V)', '电流(A)', '功率(W)'],
+					bottom: '0'
+				},
+				grid: {
+					left: '3%',
+					right: '4%',
+					bottom: '60px',
+					containLabel: true
+				},
+				xAxis: {
+					type: 'time',
+					splitLine: {
+						show: false
+					}
+				},
+				yAxis: [
+					{
+						type: 'value',
+						name: '电压/电流',
+						splitLine: {
+							show: true
+						}
+					},
+					{
+						type: 'value',
+						name: '功率',
+						splitLine: {
+							show: false
+						}
+					}
+				],
+				series: [
+					{
+						name: '电压(V)',
+						type: 'line',
+						smooth: true,
+						data: [],
+						showSymbol: false
+					},
+					{
+						name: '电流(A)',
+						type: 'line',
+						smooth: true,
+						data: [],
+						showSymbol: false
+					},
+					{
+						name: '功率(W)',
+						type: 'line',
+						smooth: true,
+						yAxisIndex: 1,
+						data: [],
+						showSymbol: false
+					}
+				]
+			};
+			this.chart.setOption(option);
+		},
+
+		updateChartData() {
+			const now = new Date().getTime();
+			
+			// 添加新数据
+			this.chartData.timestamps.push(now);
+			this.chartData.voltages.push(this.voltage);
+			this.chartData.currents.push(this.current);
+			this.chartData.powers.push(this.power);
+
+			// 限制数据点数量
+			if (this.chartData.timestamps.length > this.maxDataPoints) {
+				this.chartData.timestamps.shift();
+				this.chartData.voltages.shift();
+				this.chartData.currents.shift();
+				this.chartData.powers.shift();
+			}
+
+			// 更新图表数据
+			const option = {
+				series: [
+					{
+						data: this.chartData.timestamps.map((time, index) => [
+							time,
+							this.chartData.voltages[index]
+						])
+					},
+					{
+						data: this.chartData.timestamps.map((time, index) => [
+							time,
+							this.chartData.currents[index]
+						])
+					},
+					{
+						data: this.chartData.timestamps.map((time, index) => [
+							time,
+							this.chartData.powers[index]
+						])
+					}
+				]
+			};
+			this.chart.setOption(option);
+		},
+
+		handleResize() {
+			if (this.chart) {
+				this.chart.resize();
+			}
+		}
+	},
+	created() {
+		window.addEventListener('resize', this.handleResize);
+	},
+	unmounted() {
+		window.removeEventListener('resize', this.handleResize);
 	}
 }
 </script>
