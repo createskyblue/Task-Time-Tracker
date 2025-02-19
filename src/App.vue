@@ -91,8 +91,7 @@
 							@mouseleave="stopDrag" ref="scrollContainer"
 							class="relative w-full overflow-x-auto cursor-grab active:cursor-grabbing select-none">
 							<div class="timeline-content" :style="{ minWidth: `${24 * 3600 * baseUnitWidth}rem` }">
-								<div
-									class="sticky top-0 z-10 flex h-8 items-center bg-gray-50 border-b border-gray-200 pl-24">
+								<div class="sticky top-0 z-10 flex h-8 items-center bg-gray-50 border-b border-gray-200 pl-24">
 									<div v-for="mark in timeScaleMarks" :key="mark.time"
 										:style="{ width: `${mark.width}rem` }"
 										class="flex-shrink-0 text-xs text-gray-600 text-center border-r border-gray-200">
@@ -193,6 +192,14 @@ export default {
 	},
 	mounted() {
 		this.loadFromStorage();
+		this.tasks.forEach(task => {
+			task.timers.forEach(timer => {
+				if (timer.end === null) {
+					const elapsed = new Date() - new Date(timer.start);
+					timer.start = new Date(new Date(timer.start).getTime() - elapsed);
+				}
+			});
+		});
 		this.timerInterval = setInterval(() => {
 			this.tasks.forEach(task => {
 				if (this.isTaskRunning(task.id)) {
@@ -221,6 +228,12 @@ export default {
 						this.formattedTimeBlocks = this.formatTimeBlocks(updatedTask);
 					}
 				}
+			},
+			deep: true
+		},
+		taskDescriptions: {
+			handler() {
+				this.saveToStorage();
 			},
 			deep: true
 		}
@@ -290,6 +303,7 @@ export default {
 					description: '',
 					color: null // 先不分配颜色
 				});
+				this.saveToStorage(); // 保存到本地存储以保持计时信息
 			}
 		},
 		stopTimer(taskId) {
@@ -469,20 +483,24 @@ export default {
 			return `${hours}小时${minutes}分钟`;
 		},
 		saveToStorage() {
-			localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.tasks));
+			localStorage.setItem(this.STORAGE_KEY, JSON.stringify({
+				tasks: this.tasks,
+				taskDescriptions: this.taskDescriptions
+			}));
 		},
 		loadFromStorage() {
 			const data = localStorage.getItem(this.STORAGE_KEY);
 			if (data) {
 				const parsed = JSON.parse(data);
 				// 转换时间字符串为Date对象
-				parsed.forEach(task => {
+				parsed.tasks.forEach(task => {
 					task.timers.forEach(timer => {
 						timer.start = new Date(timer.start);
 						if (timer.end) timer.end = new Date(timer.end);
 					});
 				});
-				this.tasks = parsed;
+				this.tasks = parsed.tasks;
+				this.taskDescriptions = parsed.taskDescriptions || {};
 			}
 		},
 		handleExport(format, task) {
