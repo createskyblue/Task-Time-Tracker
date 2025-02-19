@@ -89,6 +89,7 @@
 					<div class="relative border border-gray-200 rounded-lg overflow-hidden">
 						<div @wheel.prevent="handleWheel" @mousedown="startDrag" @mousemove="onDrag" @mouseup="stopDrag"
 							@mouseleave="stopDrag" ref="scrollContainer"
+							style="scrollbar-width: none;  min-height: 200px;"
 							class="relative w-full overflow-x-auto cursor-grab active:cursor-grabbing select-none">
 							<div class="timeline-content" :style="{ minWidth: `${24 * 3600 * baseUnitWidth}rem` }">
 								<div class="sticky top-0 z-10 flex h-8 items-center bg-gray-50 border-b border-gray-200 pl-24">
@@ -103,7 +104,7 @@
 									<div v-for="(blocks, date) in formattedTimeBlocks" :key="date"
 										class="flex h-10 my-2.5 items-center border-b border-gray-100">
 										<div
-											class="sticky left-0 z-20 w-24 px-2.5 bg-white shadow-sm border-r border-gray-200 text-sm text-gray-700">
+											class="sticky left-0 z-20 w-24 px-2.5 py-5 text-sm text-gray-700">
 											{{ date }}
 										</div>
 										<div class="relative flex-grow h-full border-l border-gray-200">
