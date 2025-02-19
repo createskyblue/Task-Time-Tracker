@@ -75,6 +75,7 @@
 						</template>
 					</el-dropdown>
 					<el-button type="danger" @click="clearAllTasks">清除所有数据</el-button>
+					<el-button type="success" @click="addNewEvent">新增记录</el-button>
 				</div>
 				<!-- Time Records Display -->
 				<div v-if="selectedTask" class="mt-5 p-5 border border-gray-200 rounded-lg">
@@ -145,6 +146,7 @@
 						<span class="dialog-footer">
 							<el-button @click="editDialogVisible = false">取消</el-button>
 							<el-button type="primary" @click="saveEventEdit">保存</el-button>
+							<el-button type="danger" @click="deleteEvent">删除事件</el-button>
 						</span>
 					</template>
 				</el-dialog>
@@ -726,41 +728,58 @@ export default {
 		  },
 		
 		  saveEventEdit() {
-			if (!this.editingEvent || !this.editingEventOriginal || !this.selectedTask) {
+			if (!this.editingEvent || !this.selectedTask) {
 			  return;
 			}
-		
-			// 直接使用原始timer引用
-			const timer = this.editingEventOriginal;
-		
-			// 保持日期不变，只更新时间部分
-			const date = new Date(timer.start);
-			const newStart = new Date(this.editingEvent.start);
-			const newEnd = new Date(this.editingEvent.end);
-		
-			// 设置相同的日期
-			newStart.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
-			newEnd.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
-		
+
+			const newEvent = {
+				start: new Date(this.editingEvent.start),
+				end: new Date(this.editingEvent.end),
+				description: this.editingEvent.description || '未命名时间段',
+				color: this.editingEvent.color || '#909399'
+			};
+
 			// 验证时间范围
-			if (newEnd <= newStart) {
-			  ElMessage.error('结束时间必须晚于开始时间');
-			  return;
+			if (newEvent.end <= newEvent.start) {
+				ElMessage.error('结束时间必须晚于开始时间');
+				return;
 			}
-		
-			// 更新数据
-			timer.start = newStart;
-			timer.end = newEnd;
-			timer.description = this.editingEvent.description;
-			timer.color = this.editingEvent.color;  // 现在可以正确更新颜色了
-		
-			// 更新视图
+
+			// 添加到任务的时间记录中
+			this.selectedTask.timers.push(newEvent);
 			this.formattedTimeBlocks = this.formatTimeBlocks(this.selectedTask);
 			this.saveToStorage();
-		
-			ElMessage.success('修改已保存');
+
+			ElMessage.success('新增记录已保存');
 			this.editDialogVisible = false;
 		  },
+		  addNewEvent() {
+			if (!this.selectedTask) {
+				//弹窗
+				ElMessage.error('请先打开一个任务的甘特图');
+				return;
+			}
+
+			// 初始化编辑数据
+			this.editingEvent = {
+				start: new Date(),
+				end: new Date(new Date().getTime() + 60000), // 默认1分钟后
+				description: '',
+				color: this.getRandomColor()
+			};
+
+			this.editDialogVisible = true;
+		},
+		deleteEvent() {
+			if (!this.editingEventOriginal || !this.selectedTask) return;
+
+			// 从任务的时间记录中删除
+			this.selectedTask.timers = this.selectedTask.timers.filter(timer => timer !== this.editingEventOriginal);
+			this.formattedTimeBlocks = this.formatTimeBlocks(this.selectedTask);
+			this.saveToStorage();
+			ElMessage.success('记录已删除');
+			this.editDialogVisible = false;
+		},
 	}
 }
 </script>
