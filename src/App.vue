@@ -227,14 +227,6 @@ export default {
 	},
 	mounted() {
 		this.loadFromStorage();
-		this.tasks.forEach(task => {
-			task.timers.forEach(timer => {
-				if (timer.end === null) {
-					const elapsed = new Date() - new Date(timer.start);
-					timer.start = new Date(new Date(timer.start).getTime() - elapsed);
-				}
-			});
-		});
 		this.timerInterval = setInterval(() => {
 			this.tasks.forEach(task => {
 				if (this.isTaskRunning(task.id)) {
@@ -630,11 +622,22 @@ export default {
 			URL.revokeObjectURL(url);
 		},
 		processImportedData(data) {
-			// 处理单个任务导入
-			if (data.id && data.name && Array.isArray(data.timers)) {
+			// Handle full data format
+			if (data.tasks && Array.isArray(data.tasks)) {
+				// Import task descriptions if available
+				if (data.taskDescriptions) {
+					this.taskDescriptions = {
+						...this.taskDescriptions,
+						...data.taskDescriptions
+					};
+				}
+				return data.tasks.map(this.convertTimerDates);
+			}
+			// Handle single task format
+			else if (data.id && data.name && Array.isArray(data.timers)) {
 				return [this.convertTimerDates(data)];
 			}
-			// 处理多个任务导入
+			// Handle array of tasks format
 			else if (Array.isArray(data) && data.every(task => task.id && task.name && Array.isArray(task.timers))) {
 				return data.map(this.convertTimerDates);
 			}
@@ -812,7 +815,7 @@ export default {
 
 /* 任务说明输入框样式 */
 .task-description-input .el-textarea__inner {
-  min-height: 60px !重要;
+  min-height: 60px !important;
   font-size: 12px;
   line-height: 1.4;
   padding: 4px 8px;
