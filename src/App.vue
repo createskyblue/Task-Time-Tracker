@@ -101,7 +101,7 @@
 					</div>
 					<!-- 增加一行小字提示：小提示：滚轮缩放时间轴，拖拽滚动时间轴 -->
 					<div class="text-sm text-gray-500 mb-4">
-						<span>小提示：Ctrl+滚轮缩放时间轴，拖拽滚动时间轴</span>
+						<span>小提示：鼠标滚轮缩放时间轴，拖拽滚动时间轴</span>
 					</div>
 
 					<div class="relative border border-gray-200 rounded-lg overflow-hidden">
