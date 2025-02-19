@@ -126,6 +126,15 @@
 											{{ date }}
 										</div>
 										<div class="relative flex-grow h-full border-l border-gray-200">
+											<!-- 添加颜色统计显示 -->
+											<div class="absolute right-0 top-0 bg-black bg-opacity-50 text-white text-xs p-1 rounded">
+												<div v-for="(duration, color) in calculateColorDurations(blocks)" :key="color" 
+													class="flex items-center gap-1 mb-1">
+													<div class="w-3 h-3 rounded" :style="{ backgroundColor: color }"></div>
+													<span>{{ formatDurationSimple(duration) }}</span>
+												</div>
+											</div>
+											<!-- 原有的时间块显示 -->
 											<div v-for="block in blocks" :key="block.id"
 												class="absolute h-8 top-1 rounded text-xs text-white px-1 flex items-center justify-center overflow-hidden whitespace-nowrap opacity-100 hover:opacity-90 transition-opacity cursor-pointer"
 												:style="{
@@ -135,7 +144,8 @@
 												}" :title="`${block.description}
 开始：${formatDetailTime(block.start)}
 结束：${formatDetailTime(block.end)}
-持续：${formatDuration(block.start, block.end)}`"
+持续：${formatDuration(block.start, block.end)}
+相同颜色累计时间：${formatDurationSimple(calculateColorDurations(blocks)[block.color])}`"
 												@click="editEvent(block, date)">
 												{{ block.displayText }}
 											</div>
@@ -861,6 +871,25 @@ export default {
 				},
 				immediate: true
 			};
+		},
+		// 添加计算每个颜色的累计时间方法
+		calculateColorDurations(blocks) {
+			const colorDurations = {};
+			blocks.forEach(block => {
+				const duration = (block.end - block.start) / 1000; // 转换为秒
+				colorDurations[block.color] = (colorDurations[block.color] || 0) + duration;
+			});
+			return colorDurations;
+		},
+
+		// 添加简化的时间格式化方法
+		formatDurationSimple(seconds) {
+			const hours = Math.floor(seconds / 3600);
+			const minutes = Math.floor((seconds % 3600) / 60);
+			if (hours > 0) {
+				return `${hours}h${minutes}m`;
+			}
+			return `${minutes}m`;
 		}
 	}
 }
