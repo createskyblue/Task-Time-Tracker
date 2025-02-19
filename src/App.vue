@@ -85,6 +85,12 @@
 						<el-slider v-model="baseUnitWidth" :min="0.0004" :max="1" :step="0.0001"
 							@change="handleZoomChange" class="flex-1" />
 					</div>
+					<!-- 增加一行小字提示：Ctrl+滚轮缩放时间轴，拖拽滚动时间轴 -->
+					<div class="text-sm text-gray-500 mb-4">
+						<el-tooltip content="Ctrl+滚轮缩放时间轴，拖拽滚动时间轴" placement="top">
+							<span>Ctrl+滚轮缩放时间轴，拖拽滚动时间轴</span>
+						</el-tooltip>
+					</div>
 
 					<div class="relative border border-gray-200 rounded-lg overflow-hidden">
 						<div @wheel.prevent="handleWheel" @mousedown="startDrag" @mousemove="onDrag" @mouseup="stopDrag"
