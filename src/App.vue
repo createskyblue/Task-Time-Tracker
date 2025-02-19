@@ -161,7 +161,7 @@ export default {
 			taskDescriptions: {},
 			STORAGE_KEY: 'taskTimeTracker_data',
 			isDragging: false,
-			startX: 0,
+			lastClientX: 0,
 			scrollLeft: 0,
 			taskColors: {
 				colorList: [
@@ -201,6 +201,10 @@ export default {
 				}
 			});
 		}, 1000);
+		// 确保 scrollContainer 被正确赋值
+		this.$nextTick(() => {
+			this.scrollContainer = this.$refs.scrollContainer;
+		});
 	},
 	beforeUnmount() {
 		if (this.timerInterval) {
@@ -380,8 +384,8 @@ export default {
 			}
 		},
 		handleScroll(e) {
-			if (this.scrollContainer) {
-				const container = this.scrollContainer;
+			const container = this.$refs.scrollContainer;
+			if (container) {
 				container.querySelector('.time-scale').scrollLeft = container.scrollLeft;
 				container.querySelector('.time-blocks-container').scrollLeft = container.scrollLeft;
 			}
@@ -395,24 +399,18 @@ export default {
 			return { unit: 'minute', interval: 30 };                             // 30分钟
 		},
 		handleZoomChange(newWidth) {
-			if (!this.scrollContainer) return;
+			const container = this.$refs.scrollContainer;
+			if (!container) return;
 
-			const container = this.scrollContainer;
 			const oldWidth = this.baseUnitWidth;
-
-			// 使用上次记录的鼠标位置作为缩放中心
 			const rect = container.getBoundingClientRect();
 			const mouseX = container._lastMouseX || rect.left + (rect.width / 2);
 			const relativeX = mouseX - rect.left;
-
-			// 计算鼠标位置对应的时间点
 			const timeAtCursor = (container.scrollLeft + relativeX) / oldWidth;
 
-			// 更新缩放级别
 			this.baseUnitWidth = newWidth;
 
-			// 保持鼠标指向的时间点不变
-			nextTick(() => {
+			this.$nextTick(() => {
 				const newScrollPos = timeAtCursor * newWidth - relativeX;
 				container.scrollLeft = Math.max(0, newScrollPos);
 			});
@@ -420,7 +418,8 @@ export default {
 		handleWheel(e) {
 			if (e.ctrlKey || e.metaKey) {
 				e.preventDefault();
-				const container = this.scrollContainer;
+				const container = this.$refs.scrollContainer;
+				if (!container) return;
 
 				// 记录当前鼠标位置用于滑块缩放
 				container._lastMouseX = e.clientX;
@@ -437,7 +436,7 @@ export default {
 					this.baseUnitWidth = newWidth;
 
 					// 保持鼠标指向的时间点不变
-					nextTick(() => {
+					this.$nextTick(() => {
 						const newScrollPos = timeAtCursor * newWidth - relativeX;
 						container.scrollLeft = Math.max(0, newScrollPos);
 					});
@@ -446,15 +445,14 @@ export default {
 		},
 		startDrag(e) {
 			this.isDragging = true;
-			this.startX = e.pageX - this.scrollContainer.offsetLeft;
-			this.scrollLeft = this.scrollContainer.scrollLeft;
+			this.lastClientX = e.clientX;
+			this.scrollLeft = this.$refs.scrollContainer?.scrollLeft || 0;
 		},
 		onDrag(e) {
-			if (!this.isDragging) return;
+			if (!this.isDragging || !this.$refs.scrollContainer) return;
 			e.preventDefault();
-			const x = e.pageX - this.scrollContainer.offsetLeft;
-			const walk = (x - this.startX) * 2;
-			this.scrollContainer.scrollLeft = this.scrollLeft - walk;
+			const dx = e.clientX - this.lastClientX;
+			this.$refs.scrollContainer.scrollLeft = this.scrollLeft - dx;
 		},
 		stopDrag() {
 			this.isDragging = false;
