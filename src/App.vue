@@ -9,7 +9,7 @@
 				</div>
 				<div>
 					<!-- Task List -->
-										<el-table :data="tasks" style="width: 100%">
+					<el-table :data="tasks" style="width: 100%">
 					  <el-table-column prop="name" label="任务名称" min-width="150"></el-table-column>
 					  <el-table-column label="总时长" min-width="100">
 						<template v-slot="scope">
@@ -411,7 +411,8 @@ export default {
 					end,
 					duration,
 					displayText,
-					color: timer.color || '#909399' // 使用保存的颜色，如果没有则使用默认灰色
+					color: timer.color || '#909399', // 使用保存的颜色，如果没有则使用默认灰色
+					originalTimer: timer  // 添加对原始timer的引用
 				});
 
 				return acc;
@@ -517,30 +518,77 @@ export default {
 			const minutes = Math.floor((totalSeconds % 3600) / 60);
 			return `${hours}小时${minutes}分钟 (${timers.length})`;
 		},
-		saveToStorage() {
-			localStorage.setItem(this.STORAGE_KEY, JSON.stringify({
-				tasks: this.tasks,
-				taskDescriptions: this.taskDescriptions
-			}));
-		},
-		loadFromStorage() {
-			const data = localStorage.getItem(this.STORAGE_KEY);
-			if (data) {
-				const parsed = JSON.parse(data);
-				// 转换时间字符串为Date对象
-				parsed.tasks.forEach(task => {
-					task.timers.forEach(timer => {
-						timer.start = new Date(timer.start);
-						if (timer.end) timer.end = new Date(timer.end);
-					});
-				});
-				this.tasks = parsed.tasks;
-				this.taskDescriptions = parsed.taskDescriptions || {};
-			}
-		},
+		splitCrossDayTimers() {
+            this.tasks.forEach(task => {
+                task.timers = task.timers.flatMap(timer => {
+                    if (!timer.end) return [timer]; // 如果任务仍在进行中，不拆分
+
+                    const start = new Date(timer.start);
+                    const end = new Date(timer.end);
+                    const timers = [];
+
+                    let currentStart = start;
+                    while (currentStart < end) {
+                        const currentEnd = new Date(currentStart);
+                        currentEnd.setHours(23, 59, 59, 999);
+                        if (currentEnd > end) {
+                            currentEnd.setTime(end.getTime());
+                        }
+                        // 确保不会在0点处多创建一个0秒的记录
+                        // 检查毫秒级别的误差
+                        if (currentStart.getTime() < currentEnd.getTime()) {
+                            const duration = (currentEnd - currentStart) / 1000; // Duration in seconds
+                            if (duration > 1) {
+                                timers.push({
+                                    start: new Date(currentStart),
+                                    end: new Date(currentEnd),
+                                    description: timer.description,
+                                    color: timer.color
+                                });
+                            }
+                        }
+                        currentStart.setDate(currentStart.getDate() + 1); // 移动到下一天的零点
+                        currentStart.setHours(0, 0, 0, 0);
+                    }
+                    return timers;
+                });
+            });
+        },
+
+        saveToStorage() {
+            this.splitCrossDayTimers(); // 拆分跨天时间记录
+            const data = {
+                tasks: this.tasks,
+                taskDescriptions: this.taskDescriptions,
+                developer: 'createskyblue'
+            };
+            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
+        },
+
+        loadFromStorage() {
+            const data = localStorage.getItem(this.STORAGE_KEY);
+            if (data) {
+                const parsed = JSON.parse(data);
+                // 转换时间字符串为Date对象
+                parsed.tasks.forEach(task => {
+                    task.timers.forEach(timer => {
+                        timer.start = new Date(timer.start);
+                        if (timer.end) timer.end = new Date(timer.end);
+                    });
+                });
+                this.tasks = parsed.tasks;
+                this.taskDescriptions = parsed.taskDescriptions || {};
+                this.splitCrossDayTimers(); // 拆分跨天时间记录
+            }
+        },
+
 		handleExport(format, task) {
 			if (format === 'json') {
-				const dataStr = JSON.stringify(task, null, 2);
+				const data = {
+					...task,
+					developer: 'createskyblue'
+				};
+				const dataStr = JSON.stringify(data, null, 2);
 				this.downloadFile(dataStr, `task_${task.id}.json`, 'application/json');
 			} else if (format === 'csv') {
 				const headers = ['开始时间,结束时间,描述\n'];
@@ -552,7 +600,12 @@ export default {
 		},
 		handleGlobalExport(format) {
 			if (format === 'json') {
-				const dataStr = JSON.stringify(this.tasks, null, 2);
+				const data = {
+					tasks: this.tasks,
+					taskDescriptions: this.taskDescriptions,
+					developer: 'createskyblue'
+				};
+				const dataStr = JSON.stringify(data, null, 2);
 				this.downloadFile(dataStr, 'all_tasks.json', 'application/json');
 			}
 		},
@@ -637,12 +690,12 @@ export default {
 		},
 		clearAllTasks() {
 			ElMessageBox.prompt(
-				'请输入"我确定删除时探客 Task Time Tracker所有数据"以确认',
+				'请输入"我确定删除所有数据"以确认',
 				'警告',
 				{
 					confirmButtonText: '确认',
 					cancelButtonText: '取消',
-					inputPattern: /^我确定删除"时探客(开发者:createskyblue@outlook.com)"的所有数据$/,
+					inputPattern: /^我确定删除所有数据$/,
 					inputErrorMessage: '输入内容不正确'
 				}
 			).then(({ value }) => {
@@ -659,47 +712,55 @@ export default {
 			});
 		},
 		editEvent(block, date) {
-			this.editingEventOriginal = block;
-			this.editingEventDate = date;
+			// 简单地初始化编辑数据
 			this.editingEvent = {
-				start: new Date(block.start),
-				end: new Date(block.end),
-				description: block.description,
-				color: block.color
+			  start: new Date(block.start),
+			  end: new Date(block.end),
+			  description: block.description || '',
+			  color: block.color || '#409EFF'
 			};
+			
+			// 保存对原始timer的引用
+			this.editingEventOriginal = block.originalTimer;
 			this.editDialogVisible = true;
-		},
-
-		saveEventEdit() {
-			if (!this.selectedTask || !this.editingEvent || !this.editingEventOriginal) return;
-
-			// 找到原始计时器
-			const timer = this.selectedTask.timers.find(t => {
-				const start = new Date(t.start);
-				const end = t.end ? new Date(t.end) : new Date();
-				return start.getTime() === this.editingEventOriginal.start.getTime() 
-					&& end.getTime() === this.editingEventOriginal.end.getTime();
-			});
-
-			if (timer) {
-				// 更新计时器信息
-				timer.start = this.editingEvent.start;
-				timer.end = this.editingEvent.end;
-				timer.description = this.editingEvent.description;
-				timer.color = this.editingEvent.color;
-
-				// 更新视图和存储
-				this.formattedTimeBlocks = this.formatTimeBlocks(this.selectedTask);
-				this.saveToStorage();
-				
-				ElMessage.success('修改已保存');
+		  },
+		
+		  saveEventEdit() {
+			if (!this.editingEvent || !this.editingEventOriginal || !this.selectedTask) {
+			  return;
 			}
-
+		
+			// 直接使用原始timer引用
+			const timer = this.editingEventOriginal;
+		
+			// 保持日期不变，只更新时间部分
+			const date = new Date(timer.start);
+			const newStart = new Date(this.editingEvent.start);
+			const newEnd = new Date(this.editingEvent.end);
+		
+			// 设置相同的日期
+			newStart.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+			newEnd.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+		
+			// 验证时间范围
+			if (newEnd <= newStart) {
+			  ElMessage.error('结束时间必须晚于开始时间');
+			  return;
+			}
+		
+			// 更新数据
+			timer.start = newStart;
+			timer.end = newEnd;
+			timer.description = this.editingEvent.description;
+			timer.color = this.editingEvent.color;  // 现在可以正确更新颜色了
+		
+			// 更新视图
+			this.formattedTimeBlocks = this.formatTimeBlocks(this.selectedTask);
+			this.saveToStorage();
+		
+			ElMessage.success('修改已保存');
 			this.editDialogVisible = false;
-			this.editingEvent = null;
-			this.editingEventOriginal = null;
-			this.editingEventDate = null;
-		},
+		  },
 	}
 }
 </script>
@@ -725,7 +786,7 @@ export default {
 
 /* 任务说明输入框样式 */
 .task-description-input .el-textarea__inner {
-  min-height: 60px !important;
+  min-height: 60px !重要;
   font-size: 12px;
   line-height: 1.4;
   padding: 4px 8px;
