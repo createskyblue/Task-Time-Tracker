@@ -9,11 +9,26 @@
 				</div>
 				<div>
 					<!-- Task List -->
-					<el-table :data="tasks" style="width: 100%">
-					  <el-table-column prop="name" label="任务名称" min-width="150"></el-table-column>
+					<el-table :data="tasks" style="width: 100%" @row-click="handleRowClick">
+					  <el-table-column label="任务名称" min-width="150">
+						<template v-slot="scope">
+						  <el-input
+							v-if="scope.row.isEditing"
+							v-model="scope.row.editingName"
+							@blur="finishEdit(scope.row)"
+							@keyup.enter="finishEdit(scope.row)"
+							ref="nameInput"
+						  />
+						  <span v-else @dblclick="startEdit(scope.row)" class="cursor-pointer hover:text-blue-500">
+							{{ scope.row.name }}
+						  </span>
+						</template>
+					  </el-table-column>
 					  <el-table-column label="总时长" min-width="100">
 						<template v-slot="scope">
-						  {{ calculateTotalDuration(scope.row.timers) }}
+						  <span class="cursor-pointer hover:text-blue-500" @click="selectTask(scope.row.id)">
+							{{ calculateTotalDuration(scope.row.timers) }}
+						  </span>
 						</template>
 					  </el-table-column>
 					  <el-table-column label="任务说明" min-width="200">
@@ -38,9 +53,8 @@
 					  <el-table-column label="操作" min-width="500">
 						<template v-slot="scope">
 						  <div class="flex space-x-2">
-							<el-button style="margin-left: 0px;" @click="startTimer(scope.row.id)" type="primary" :disabled="isTaskRunning(scope.row.id)">开始计时</el-button>
-							<el-button style="margin-left: 0px;" @click="stopTimer(scope.row.id)" type="danger" :disabled="!isTaskRunning(scope.row.id)">结束计时</el-button>
-							<el-button style="margin-left: 0px;" @click="selectTask(scope.row.id)" type="info">查看甘特图</el-button>
+							<el-button style="margin-left: 0px;" @click.stop="startTimer(scope.row.id)" type="primary" :disabled="isTaskRunning(scope.row.id)">开始计时</el-button>
+							<el-button style="margin-left: 0px;" @click.stop="stopTimer(scope.row.id)" type="danger" :disabled="!isTaskRunning(scope.row.id)">结束计时</el-button>
 							<el-dropdown trigger="click" @command="command => handleExport(command, scope.row)">
 							  <el-button type="success">导出<el-icon class="el-icon--right"><arrow-down /></el-icon></el-button>
 							  <template #dropdown>
@@ -85,11 +99,9 @@
 						<el-slider v-model="baseUnitWidth" :min="0.0004" :max="1" :step="0.0001"
 							@change="handleZoomChange" class="flex-1" />
 					</div>
-					<!-- 增加一行小字提示：Ctrl+滚轮缩放时间轴，拖拽滚动时间轴 -->
+					<!-- 增加一行小字提示：小提示：滚轮缩放时间轴，拖拽滚动时间轴 -->
 					<div class="text-sm text-gray-500 mb-4">
-						<el-tooltip content="Ctrl+滚轮缩放时间轴，拖拽滚动时间轴" placement="top">
-							<span>Ctrl+滚轮缩放时间轴，拖拽滚动时间轴</span>
-						</el-tooltip>
+						<span>小提示：Ctrl+滚轮缩放时间轴，拖拽滚动时间轴</span>
 					</div>
 
 					<div class="relative border border-gray-200 rounded-lg overflow-hidden">
@@ -223,6 +235,7 @@ export default {
 			editingEvent: null,
 			editingEventDate: null,
 			editingEventOriginal: null,
+			requireCtrlForZoom: false, // 新增：控制是否需要Ctrl键进行缩放
 		}
 	},
 	mounted() {
@@ -259,7 +272,17 @@ export default {
 			deep: true
 		},
 		taskDescriptions: {
-			handler() {
+			handler(newDescriptions) {
+				// 遍历所有任务，更新正在计时的描述
+				this.tasks.forEach(task => {
+					const activeTimer = task.timers.find(t => t.end === null);
+					if (activeTimer) {
+						activeTimer.description = newDescriptions[task.id] || '';
+						if (this.selectedTask && this.selectedTask.id === task.id) {
+							this.formattedTimeBlocks = this.formatTimeBlocks(task);
+						}
+					}
+				});
 				this.saveToStorage();
 			},
 			deep: true
@@ -327,7 +350,7 @@ export default {
 					start: new Date(),
 					end: null,
 					description: this.taskDescriptions[taskId] || '', // 使用现有描述或空字符串
-					color: null // 先不分配颜色
+					color: this.getRandomColor() // 直接分配颜色
 				});
 				this.saveToStorage(); // 保存到本地存储以保持计时信息
 			}
@@ -467,7 +490,7 @@ export default {
 			});
 		},
 		handleWheel(e) {
-			if (e.ctrlKey || e.metaKey) {
+			if (!this.requireCtrlForZoom || e.ctrlKey || e.metaKey) {
 				e.preventDefault();
 				const container = this.$refs.scrollContainer;
 				if (!container) return;
@@ -772,7 +795,7 @@ export default {
 
 		  addNewEvent() {
 			if (!this.selectedTask) {
-				ElMessage.error('请先打开一个任务的甘特图');
+				ElMessage.error('请先打开一个任务的时间线');
 				return;
 			}
 
@@ -798,6 +821,47 @@ export default {
 			ElMessage.success('记录已删除');
 			this.editDialogVisible = false;
 		},
+		handleRowClick(row, column) {
+			// 如果点击的是操作列或正在编辑的输入框，不进行跳转
+			this.selectTask(row.id);
+		},
+
+		startEdit(row) {
+			if (!row.isEditing) {
+				row.isEditing = true;
+				row.editingName = row.name;
+				this.$nextTick(() => {
+					const input = this.$refs.nameInput;
+					if (input && input.length) {
+						input[0].focus();
+					}
+				});
+			}
+		},
+
+		finishEdit(row) {
+			if (row.editingName && row.editingName.trim()) {
+				row.name = row.editingName.trim();
+				this.saveToStorage();
+			}
+			row.isEditing = false;
+		},
+
+		watchTaskDescription(taskId) {
+			return {
+				handler(newDesc) {
+					const task = this.tasks.find(t => t.id === taskId);
+					if (task) {
+						const activeTimer = task.timers.find(t => t.end === null);
+						if (activeTimer) {
+							activeTimer.description = newDesc;
+							this.formattedTimeBlocks = this.formatTimeBlocks(task);
+						}
+					}
+				},
+				immediate: true
+			};
+		}
 	}
 }
 </script>
@@ -841,5 +905,9 @@ export default {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+}
+
+.el-table .el-input {
+  margin: -5px 0;
 }
 </style>
