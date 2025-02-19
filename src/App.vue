@@ -724,7 +724,11 @@ export default {
 			});
 		},
 		editEvent(block, date) {
-			// 简单地初始化编辑数据
+			// 保存对原始timer的引用和日期
+			this.editingEventOriginal = block.originalTimer;
+			this.editingEventDate = date;
+			
+			// 初始化编辑数据
 			this.editingEvent = {
 			  start: new Date(block.start),
 			  end: new Date(block.end),
@@ -732,15 +736,11 @@ export default {
 			  color: block.color || '#409EFF'
 			};
 			
-			// 保存对原始timer的引用
-			this.editingEventOriginal = block.originalTimer;
 			this.editDialogVisible = true;
 		  },
 		
 		  saveEventEdit() {
-			if (!this.editingEvent || !this.selectedTask) {
-			  return;
-			}
+			if (!this.editingEvent || !this.selectedTask) return;
 
 			const newEvent = {
 				start: new Date(this.editingEvent.start),
@@ -755,22 +755,29 @@ export default {
 				return;
 			}
 
-			// 添加到任务的时间记录中
-			this.selectedTask.timers.push(newEvent);
+			if (this.editingEventOriginal) {
+				// 编辑模式：更新现有记录
+				Object.assign(this.editingEventOriginal, newEvent);
+			} else {
+				// 新增模式：添加新记录
+				this.selectedTask.timers.push(newEvent);
+			}
+
 			this.formattedTimeBlocks = this.formatTimeBlocks(this.selectedTask);
 			this.saveToStorage();
 
-			ElMessage.success('新增记录已保存');
+			ElMessage.success(this.editingEventOriginal ? '记录已更新' : '新记录已保存');
 			this.editDialogVisible = false;
 		  },
+
 		  addNewEvent() {
 			if (!this.selectedTask) {
-				//弹窗
 				ElMessage.error('请先打开一个任务的甘特图');
 				return;
 			}
 
-			// 初始化编辑数据
+			// 初始化新记录数据
+			this.editingEventOriginal = null; // 清除原始记录引用，表示这是新增操作
 			this.editingEvent = {
 				start: new Date(),
 				end: new Date(new Date().getTime() + 60000), // 默认1分钟后
@@ -780,6 +787,7 @@ export default {
 
 			this.editDialogVisible = true;
 		},
+
 		deleteEvent() {
 			if (!this.editingEventOriginal || !this.selectedTask) return;
 
