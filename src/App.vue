@@ -100,8 +100,8 @@
 						<div class="mb-4">
 	
 							<el-button type="success" @click="addNewEvent">新增记录</el-button>
-							<el-button @click.stop="handleExport(scope.row)" type="success">导出</el-button>
-							<el-button @click="deleteTask(scope.row)" type="danger">删除</el-button>
+							<el-button @click.stop="handleExport(selectedTask)" type="success">导出</el-button>
+							<el-button @click="deleteTask(selectedTask)" type="danger">删除</el-button>
 						</div>
 	
 						<div class="relative border border-gray-200 rounded-lg overflow-hidden">
@@ -757,45 +757,49 @@ export default {
 			reader.readAsText(file.raw);
 		},
 		deleteTask(task) {
-			ElMessageBox.prompt(
-				'请输入完整的项目名称以确认删除',
-				'警告',
-				{
-					confirmButtonText: '确认',
-					cancelButtonText: '取消',
-					inputPattern: new RegExp(`^${task.name}$`),
-					inputErrorMessage: '项目名称不正确'
-				}
-			).then(({ value }) => {
-				this.tasks = this.tasks.filter(t => t.id !== task.id);
-				this.saveToStorage();
-				ElMessage.success('删除成功');
-			}).catch(() => {
-				// 用户取消或输入错误
-			});
+		  ElMessageBox.prompt(
+			`请输入完整的项目名称以确认删除：<span class="bg-red-100 text-red-600 px-1 mx-1 rounded-md" ">${task.name}</span>`,
+			'警告',
+			{
+			  confirmButtonText: '确认',
+			  cancelButtonText: '取消',
+			  inputPattern: new RegExp(`^${task.name}$`),
+			  inputErrorMessage: '项目名称不正确',
+			  dangerouslyUseHTMLString: true
+			}
+		  ).then(({ value }) => {
+			this.tasks = this.tasks.filter(t => t.id !== task.id);
+			this.saveToStorage();
+			ElMessage.success('删除成功');
+			// 刷新页面
+			location.reload();
+		  }).catch(() => {
+			// 用户取消或输入错误
+		  });
 		},
 		clearAllTasks() {
-			ElMessageBox.prompt(
-				'请输入"我确定删除所有数据"以确认',
-				'警告',
-				{
-					confirmButtonText: '确认',
-					cancelButtonText: '取消',
-					inputPattern: /^我确定删除所有数据$/,
-					inputErrorMessage: '输入内容不正确'
-				}
-			).then(({ value }) => {
-				//强制下载存档
-				this.handleGlobalExport('json');
-				//删除开始
-				this.tasks = [];
-				this.saveToStorage();
-				ElMessage.success('已清除所有数据');
-				//刷新页面
-				location.reload();
-			}).catch(() => {
-				// 用户取消或输入错误
-			});
+		  ElMessageBox.prompt(
+			`请输入<span class="bg-red-100 text-red-600 px-1 mx-1 rounded-md">我确定删除所有数据</span>以确认`,
+			'警告',
+			{
+			  confirmButtonText: '确认',
+			  cancelButtonText: '取消',
+			  inputPattern: /^我确定删除所有数据$/,
+			  inputErrorMessage: '输入内容不正确',
+			  dangerouslyUseHTMLString: true
+			}
+		  ).then(({ value }) => {
+			// 强制下载存档
+			this.handleGlobalExport('json');
+			// 删除开始
+			this.tasks = [];
+			this.saveToStorage();
+			ElMessage.success('已清除所有数据');
+			// 刷新页面
+			location.reload();
+		  }).catch(() => {
+			// 用户取消或输入错误
+		  });
 		},
 		editEvent(block, date) {
 			// 保存对原始timer的引用和日期
