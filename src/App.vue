@@ -206,7 +206,7 @@ ${block.description}`" @click="editEvent(block, date)">
 				</div>
 
 				<!-- 设置部分 -->
-				<div class="mt-4 p-4 border border-gray-200 rounded-lg">
+				<div class="mt-4 p-4 border border-gray-200 rounded-lg shadow-sm">
 					<h3 class="text-lg font-medium mb-4">设置</h3>
 					<el-switch v-model="autoExport" active-text="自动导出存档" inactive-text="手动导出存档"
 						@change="saveSettings" />
