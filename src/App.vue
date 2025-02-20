@@ -182,6 +182,25 @@
 					</template>
 				</el-dialog>
 			</div>
+			<!-- Settings Section -->
+			<div class="mt-4 p-4 border border-gray-200 rounded-lg">
+				<h3 class="text-lg font-medium mb-4">设置</h3>
+				<el-switch
+					v-model="autoExport"
+					active-text="自动导出存档"
+					inactive-text="手动导出存档"
+					@change="saveSettings"
+				/>
+			</div>
+			<!-- Footer -->
+			<div class="mt-8 text-center text-gray-500 text-sm">
+				<p>Created by <a href="https://github.com/createskyblue" target="_blank" class="text-blue-500 hover:underline">createskyblue</a></p>
+				<p class="mt-1">
+					<a href="https://github.com/createskyblue/Task-Time-Tracker" target="_blank" class="text-blue-500 hover:underline">
+						Visit on GitHub
+					</a>
+				</p>
+			</div>
 		</el-main>
 	</el-container>
 </template>
@@ -248,6 +267,7 @@ export default {
 			editingEventDate: null,
 			editingEventOriginal: null,
 			requireCtrlForZoom: false, // 新增：控制是否需要Ctrl键进行缩放
+			autoExport: true, // Add this line
 		}
 	},
 	mounted() {
@@ -391,8 +411,10 @@ export default {
 						ElMessage.success('计时已结束');
 						this.taskDescriptions[taskId] = ''; // 清空任务说明
 						this.saveToStorage(); // 保存到本地存储以保持颜色信息
-						//自动下载存档
-						this.handleGlobalExport('json');
+						// Only auto-export if enabled
+						if (this.autoExport) {
+							this.handleGlobalExport('json');
+						}
 					}
 				}
 			}
@@ -616,6 +638,12 @@ export default {
                 this.taskDescriptions = parsed.taskDescriptions || {};
                 this.splitCrossDayTimers(); // 拆分跨天时间记录
             }
+			// Load settings
+			const settings = localStorage.getItem('taskTimeTracker_settings');
+			if (settings) {
+				const parsed = JSON.parse(settings);
+				this.autoExport = parsed.autoExport ?? true;
+			}
         },
 
 		handleExport(format, task) {
@@ -948,7 +976,13 @@ export default {
 			}).length;
 	  
 			return `${hours}小时${minutes}分钟 (${recordCount})`;
-		  }
+		  },
+		  // Add new method for saving settings
+		  saveSettings() {
+			localStorage.setItem('taskTimeTracker_settings', JSON.stringify({
+			  autoExport: this.autoExport
+			}));
+		  },
 	}
 }
 </script>

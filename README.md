@@ -1,9 +1,10 @@
 # 时探客 Task Time Tracker
 
-一个简洁易用的个人项目时间追踪工具，帮助你记录和管理各项任务的时间投入
+一个简洁易用的个人项目时间追踪工具，帮助你记录和管理各项任务的时间投入。
 
-*业余个人开发，非客单质量
+*业余个人开发，非客单质量*
 
+[在线体验：https://createskyblue.github.io/Task-Time-Tracker/](https://createskyblue.github.io/Task-Time-Tracker/)
 
 ## 功能特点
 
