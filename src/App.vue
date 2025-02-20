@@ -487,7 +487,15 @@ export default {
 				return acc;
 			}, {});
 
-			return blocks;
+			// 对日期进行排序，最新的日期在前面
+			const sortedBlocks = {};
+			Object.keys(blocks)
+				.sort((a, b) => new Date(b) - new Date(a))
+				.forEach(key => {
+					sortedBlocks[key] = blocks[key];
+				});
+
+			return sortedBlocks;
 		},
 		onTaskSelected(task) {
 			console.log('Selected task:', task);
