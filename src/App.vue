@@ -247,30 +247,6 @@ export default {
 			isDragging: false,
 			lastClientX: 0,
 			scrollLeft: 0,
-			taskColors: {
-				colorList: [
-					'#409EFF', // 蓝色
-					'#67C23A', // 绿色
-					'#E6A23C', // 黄色
-					'#F56C6C', // 红色
-					'#626aef', // 靛蓝
-					'#6f7ad3', // 紫色
-					'#5cb87a', // 浅绿
-					'#ff9f7f'  // 橙色
-				]
-			},
-			standardColors: [
-				'#409EFF', // 蓝色
-				'#67C23A', // 绿色
-				'#E6A23C', // 黄色
-				'#F56C6C', // 红色
-				'#909399', // 灰色
-				'#626aef', // 靛蓝
-				'#6f7ad3', // 紫色
-				'#1989fa', // 浅蓝
-				'#5cb87a', // 浅绿
-				'#ff9f7f'  // 橙色
-			],
 			timerInterval: null,
 			formattedTimeBlocks: {},
 			editDialogVisible: false,
@@ -385,7 +361,29 @@ export default {
 			return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 		},
 		getRandomColor() {
-			return this.taskColors.colorList[Math.floor(Math.random() * this.taskColors.colorList.length)];
+			// 生成随机的 H (0-360), S (50-100), V (50-100)
+			let h = Math.floor(Math.random() * 361);
+			let s = Math.floor(Math.random() * 51) + 45;
+			//75~95
+			let v = Math.floor(Math.random() * 21) + 75;
+		
+			// 将 HSV 转换为 RGB
+			let rgb = this.hsvToRgb(h, s, v);
+		
+			// 返回 RGB 颜色值
+			return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+		},
+		
+		hsvToRgb(h, s, v) {
+			s /= 100;
+			v /= 100;
+			let k = (n) => (n + h / 60) % 6;
+			let f = (n) => v - v * s * Math.max(Math.min(k(n), 4 - k(n), 1), 0);
+			return {
+				r: Math.round(f(5) * 255),
+				g: Math.round(f(3) * 255),
+				b: Math.round(f(1) * 255)
+			};
 		},
 		startTimer(taskId) {
 			const task = this.tasks.find(t => t.id === taskId);
@@ -402,24 +400,21 @@ export default {
 		stopTimer(taskId) {
 			const task = this.tasks.find(t => t.id === taskId);
 			const description = this.taskDescriptions[taskId]?.trim();
-
 			if (task) {
 				const timer = task.timers.find(t => t.end === null);
 				if (timer) {
-					timer.end = new Date();
-					timer.description = description;
-					timer.color = this.getRandomColor(); // 结束时分配固定颜色
-
 					const duration = (timer.end - timer.start) / 1000; // Duration in seconds
 					if (duration < 10) {
 						ElMessage.warning('时间不足10秒，计时已丢弃');
+						task.timers = task.timers.filter(t => t !== timer); // Remove the timer
 						this.saveToStorage(); // 保存到本地存储以保持计时信息
 					} else {
 						if (!description) {
 							ElMessage.error('请先填写任务说明再结束计时');
-							task.timers = task.timers.filter(t => t !== timer); // Remove the timer
 							return;
 						}
+						timer.end = new Date();
+						timer.description = description;
 						ElMessage.success('计时已结束');
 						this.saveToStorage(); // 保存到本地存储以保持颜色信息
 						// Only auto-export if enabled
