@@ -59,15 +59,19 @@
 								{{ isTaskRunning(selectedTask.id) ? '进行中' : '未开始' }}
 							</el-tag>
 						</h2>
-						<div class="flex items-center space-x-2">
-							<el-button type="primary" @click="startTimer(selectedTask.id)"
-								:v-show="isTaskRunning(selectedTask.id)">
-								让我们开始
-							</el-button>
-							<el-button type="danger" @click="stopTimer(selectedTask.id)"
-								:v-show="!isTaskRunning(selectedTask.id)">
-								暂停记录
-							</el-button>
+					<div>
+						  <el-button 
+							type="primary" 
+							@click="startTimer(selectedTask.id)"
+							v-show="!isTaskRunning(selectedTask.id)">
+							让我们开始
+						  </el-button>
+						  <el-button 
+							type="danger" 
+							@click="stopTimer(selectedTask.id)"
+							v-show="isTaskRunning(selectedTask.id)">
+							暂停记录
+						  </el-button>
 						</div>
 					</div>
 
