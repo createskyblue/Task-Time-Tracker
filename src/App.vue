@@ -19,7 +19,17 @@
 						:class="{ 'bg-gray-100': selectedTask?.id === task.id }" @click="selectTask(task.id)">
 						<div class="flex items-center justify-between">
 							<div class="flex-1">
-								<div class="font-medium">{{ task.name }}</div>
+								<div class="font-medium" @dblclick.stop="startEditing(task)" v-if="!task.isEditing">
+									{{ task.name }}
+								</div>
+								<el-input
+									v-else
+									v-model="task.editingName"
+									size="small"
+									@blur="finishEditing(task)"
+									@keyup.enter="finishEditing(task)"
+									v-focus
+								/>
 								<div class="text-xs text-gray-500">
 									{{ calculateTotalDuration(task.timers) }}
 								</div>
@@ -322,6 +332,14 @@ export default {
 			autoExport: true, // Add this line
 			taskNameTooltipText: '双击可编辑项目名称',
 			showAddTaskDialog: false,
+			editingTask: null,
+		}
+	},
+	directives: {
+		focus: {
+			mounted(el) {
+				el.querySelector('input').focus()
+			}
 		}
 	},
 	mounted() {
@@ -960,7 +978,7 @@ export default {
 			});
 		},
 		handleRowClick(row, column) {
-			// 如果点击的是操作列或正在编辑的输入框，不进行跳转
+			// 如果点击的是操作列或正在编辑的输入框���不进行跳转
 			this.selectTask(row.id);
 		},
 
@@ -1097,6 +1115,25 @@ export default {
 			const minutes = Math.floor((totalSeconds % 3600) / 60);
 			return `${hours}h${minutes}m (${blocks.length})`;
 		},
+		startEditing(task) {
+			// Cancel any other editing
+			this.tasks.forEach(t => {
+				if (t.id !== task.id) {
+					t.isEditing = false;
+				}
+			});
+
+			task.isEditing = true;
+			task.editingName = task.name;
+		},
+
+		finishEditing(task) {
+			if (task.editingName && task.editingName.trim()) {
+				task.name = task.editingName.trim();
+				this.saveToStorage();
+			}
+			task.isEditing = false;
+		},
 	}
 }
 </script>
@@ -1184,5 +1221,9 @@ export default {
 /* 调整主内容区域的位置 */
 .content-wrapper {
 	margin-left: 250px;
+}
+
+.el-input.el-input--small {
+	margin: -2px 0;
 }
 </style>
