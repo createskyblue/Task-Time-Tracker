@@ -664,25 +664,26 @@ export default {
 				this.autoExport = parsed.autoExport ?? true;
 			}
         },
-
 		handleExport(task) {
-			const data = {
-				...task,
-				developer: 'createskyblue'
-			};
-			const dataStr = JSON.stringify(data, null, 2);
-			this.downloadFile(dataStr, `task_${task.id}.json`, 'application/json');
+		const data = {
+			...task,
+			developer: 'createskyblue'
+		};
+		const dataStr = JSON.stringify(data, null, 2);
+		const timestamp = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
+		this.downloadFile(dataStr, `task_${task.name}_${timestamp}.json`, 'application/json');
 		},
 		handleGlobalExport(format) {
-			if (format === 'json') {
-				const data = {
-					tasks: this.tasks,
-					taskDescriptions: this.taskDescriptions,
-					developer: 'createskyblue'
-				};
-				const dataStr = JSON.stringify(data, null, 2);
-				this.downloadFile(dataStr, 'all_tasks.json', 'application/json');
-			}
+		if (format === 'json') {
+			const data = {
+			tasks: this.tasks,
+			taskDescriptions: this.taskDescriptions,
+			developer: 'createskyblue'
+			};
+			const dataStr = JSON.stringify(data, null, 2);
+			const timestamp = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
+			this.downloadFile(dataStr, `all_tasks_${timestamp}.json`, 'application/json');
+		}
 		},
 		downloadFile(content, filename, type) {
 			const blob = new Blob([content], { type });
