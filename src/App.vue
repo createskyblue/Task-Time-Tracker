@@ -10,18 +10,23 @@
 				<div>
 					<!-- Task List -->
 					<el-table :data="tasks" style="width: 100%" @row-click="handleRowClick">
-					  <el-table-column label="任务名称" min-width="150">
+					  <el-table-column label="项目名称" min-width="150">
 						<template v-slot="scope">
-						  <el-input
-							v-if="scope.row.isEditing"
-							v-model="scope.row.editingName"
-							@blur="finishEdit(scope.row)"
-							@keyup.enter="finishEdit(scope.row)"
-							ref="nameInput"
-						  />
-						  <span v-else @dblclick="startEdit(scope.row)" class="cursor-pointer hover:text-blue-500">
-							{{ scope.row.name }}
-						  </span>
+						  <el-tooltip :content="taskNameTooltip(scope.row)" placement="top">
+							<span>
+							  <el-input
+								v-if="scope.row.isEditing"
+								v-model="scope.row.editingName"
+								@blur="finishEdit(scope.row)"
+								@keyup.enter="finishEdit(scope.row)"
+								ref="nameInput"
+							  />
+							  <span v-else @dblclick="startEdit(scope.row)" class="cursor-pointer hover:text-blue-500">
+								{{ scope.row.name }}
+							  </span>
+							  <el-icon-question class="ml-1 cursor-pointer" @click="showTooltip(scope.row)" />
+							</span>
+						  </el-tooltip>
 						</template>
 					  </el-table-column>
 					  <el-table-column label="时长统计(事件计数)" min-width="200">
@@ -41,7 +46,7 @@
 							</div>
 						</template>
 					  </el-table-column>
-					  <el-table-column label="任务说明" min-width="200">
+					  <el-table-column label="任务说明" min-width="300">
 						<template v-slot="scope">
 						  <el-input
 							v-model="taskDescriptions[scope.row.id]"
@@ -52,7 +57,7 @@
 						  ></el-input>
 						</template>
 					  </el-table-column>
-					  <el-table-column label="计时状态" min-width="150">
+					  <el-table-column label="计时状态" min-width="100">
 						<template v-slot="scope">
 						  <span v-if="isTaskRunning(scope.row.id)" class="text-blue-500 font-bold">
 							已计时: {{ getRunningTime(scope.row.id) }}
@@ -60,106 +65,95 @@
 						  <span v-else>未开始计时</span>
 						</template>
 					  </el-table-column>
-					  <el-table-column label="操作" min-width="500">
+					  <el-table-column label="部分操作" min-width="100">
 						<template v-slot="scope">
-						  <div class="flex space-x-2">
-							<el-button style="margin-left: 0px;" @click.stop="startTimer(scope.row.id)" type="primary" :disabled="isTaskRunning(scope.row.id)">开始计时</el-button>
-							<el-button style="margin-left: 0px;" @click.stop="stopTimer(scope.row.id)" type="danger" :disabled="!isTaskRunning(scope.row.id)">结束计时</el-button>
-							<el-dropdown trigger="click" @command="command => handleExport(command, scope.row)">
-							  <el-button type="success">导出<el-icon class="el-icon--right"><arrow-down /></el-icon></el-button>
-							  <template #dropdown>
-								<el-dropdown-menu>
-								  <el-dropdown-item command="json">JSON</el-dropdown-item>
-								  <el-dropdown-item command="csv">CSV</el-dropdown-item>
-								</el-dropdown-menu>
-							  </template>
-							</el-dropdown>
-							<el-button @click="deleteTask(scope.row)" type="danger">删除</el-button>
+						  <div class="flex flex-wrap">
+							<el-button style="margin-left: 10px;" class="mb-2" @click.stop="startTimer(scope.row.id)" type="primary" :disabled="isTaskRunning(scope.row.id)">开始计时</el-button>
+							<el-button style="margin-left: 10px;" class="mb-2" @click.stop="stopTimer(scope.row.id)" type="danger" :disabled="!isTaskRunning(scope.row.id)">结束计时</el-button>
 						  </div>
 						</template>
 					  </el-table-column>
 					</el-table>
 					<!-- Add Task -->
-					<el-input v-model="newTaskName" placeholder="任务名称" style="margin-top: 20px;"></el-input>
-					<el-button @click="addTask" type="success" style="margin-top: 10px;">创建任务</el-button>
+					<div class="flex mt-5 w-2/4">
+						<el-input v-model="newTaskName" placeholder="项目名称"></el-input>
+						<el-button @click="addTask" type="success">添加项目</el-button>
+					</div>
 				</div>
-				<!-- Global Actions -->
-				<div class="flex gap-2 mt-4">
-					<el-upload class="upload-demo" action="" :auto-upload="false" :show-file-list="false"
-						accept=".json,.csv" :on-change="handleFileChange">
-						<el-button type="primary">导入任务</el-button>
-					</el-upload>
-					<el-dropdown trigger="click" @command="handleGlobalExport">
-						<el-button type="success">导出所有数据<el-icon
-								class="el-icon--right"><arrow-down /></el-icon></el-button>
-						<template #dropdown>
-							<el-dropdown-menu>
-								<el-dropdown-item command="json">JSON</el-dropdown-item>
-							</el-dropdown-menu>
-						</template>
-					</el-dropdown>
-					<el-button type="danger" @click="clearAllTasks">清除所有数据</el-button>
-					<el-button type="success" @click="addNewEvent">新增记录</el-button>
-				</div>
+				
 				<!-- Time Records Display -->
-				<div v-if="selectedTask" class="mt-5 p-5 border border-gray-200 rounded-lg">
-					<h3 class="text-lg font-medium mb-4">{{ selectedTask.name }} - 时间记录</h3>
-					<div class="flex items-center gap-4 px-5 mb-4">
-						<span>时间单位宽度: {{ (baseUnitWidth * 3600).toFixed(1) }}px/小时</span>
-						<el-slider v-model="baseUnitWidth" :min="0.0004" :max="1" :step="0.0001"
-							@change="handleZoomChange" class="flex-1" />
+				<div  class="mt-5 p-5 border border-gray-200 rounded-lg">
+					<div v-if="!selectedTask">
+						<h3 class="text-lg font-medium mb-4">时间线</h3>
+						<div class="text-sm text-gray-500 mt-4">
+							<span>请先选择一个项目以查看时间线（任务列表）<br>*你知道吗？双击项目名称可以重命名</span>
+						</div>
 					</div>
-					<!-- 增加一行小字提示：小提示：滚轮缩放时间轴，拖拽滚动时间轴 -->
-					<div class="text-sm text-gray-500 mb-4">
-						<span>小提示：鼠标滚轮缩放时间轴，拖拽滚动时间轴</span>
-					</div>
-
-					<div class="relative border border-gray-200 rounded-lg overflow-hidden">
-						<div @wheel.prevent="handleWheel" @mousedown="startDrag" @mousemove="onDrag" @mouseup="stopDrag"
-							@mouseleave="stopDrag" ref="scrollContainer"
-							style="scrollbar-width: none;  min-height: 200px;"
-							class="relative w-full overflow-x-auto cursor-grab active:cursor-grabbing select-none">
-							<div class="timeline-content" :style="{ minWidth: `${24 * 3600 * baseUnitWidth}rem` }">
-								<div class="sticky top-0 z-10 flex h-8 items-center bg-gray-50 border-b border-gray-200 pl-24">
-									<div v-for="mark in timeScaleMarks" :key="mark.time"
-										:style="{ width: `${mark.width}rem` }"
-										class="flex-shrink-0 text-xs text-gray-600 text-center border-r border-gray-200">
-										{{ mark.label }}
-									</div>
-								</div>
-
-								<div class="time-blocks-container">
-									<div v-for="(blocks, date) in formattedTimeBlocks" :key="date"
-										class="flex h-10 my-2.5 items-center border-b border-gray-100">
-										<div
-											class="sticky left-0 z-20 w-24 px-2.5 py-5 text-sm text-gray-700">
-											{{ date }}
+					<div v-if="selectedTask">
+						<h3 class="text-lg font-medium mb-4">时间线 ( {{ selectedTask.name||"" }} )</h3>
+						<!-- <div class="flex items-center gap-4 px-5 mb-4">
+							<span>时间单位宽度: {{ (baseUnitWidth * 3600).toFixed(1) }}px/小时</span>
+							<el-slider v-model="baseUnitWidth" :min="0.0004" :max="1" :step="0.0001"
+								@change="handleZoomChange" class="flex-1" />
+						</div> -->
+						<!-- 增加一行小字提示：小提示：滚轮缩放时间轴，拖拽滚动时间轴 -->
+						<div class="mb-4">
+	
+							<el-button type="success" @click="addNewEvent">新增记录</el-button>
+							<el-button @click.stop="handleExport(scope.row)" type="success">导出</el-button>
+							<el-button @click="deleteTask(scope.row)" type="danger">删除</el-button>
+						</div>
+	
+						<div class="relative border border-gray-200 rounded-lg overflow-hidden">
+							<div @wheel.prevent="handleWheel" @mousedown="startDrag" @mousemove="onDrag" @mouseup="stopDrag"
+								@mouseleave="stopDrag" ref="scrollContainer"
+								style="scrollbar-width: none;  min-height: 200px;"
+								class="relative w-full overflow-x-auto cursor-grab active:cursor-grabbing select-none">
+								<div class="timeline-content" :style="{ minWidth: `${24 * 3600 * baseUnitWidth}rem` }">
+									<div class="sticky top-0 z-10 flex h-8 items-center bg-gray-50 border-b border-gray-200 pl-24">
+										<div v-for="mark in timeScaleMarks" :key="mark.time"
+											:style="{ width: `${mark.width}rem` }"
+											class="flex-shrink-0 text-xs text-gray-600 text-center border-r border-gray-200">
+											{{ mark.label }}
 										</div>
-										<div class="relative flex-grow h-full border-l border-gray-200">
-											<!-- 原有的时间块显示 -->
-											<div v-for="block in blocks" :key="block.id"
-												class="absolute h-8 top-1 rounded text-xs text-white px-1 flex items-center justify-center overflow-hidden whitespace-nowrap opacity-100 hover:opacity-90 transition-opacity cursor-pointer"
-												:style="{
-													left: `${calculateLeftPosition(block.start)}rem`,
-													width: `${calculateDuration(block.start, block.end)}rem`,
-													backgroundColor: block.color
-												}" :title="`${block.description}
-开始：${formatDetailTime(block.start)}
-结束：${formatDetailTime(block.end)}
-持续：${formatDuration(block.start, block.end)}
-相同颜色累计时间：${formatDurationSimple(calculateColorDurations(blocks)[block.color])}`"
-												@click="editEvent(block, date)">
-												{{ block.displayText }}
+									</div>
+	
+									<div class="time-blocks-container">
+										<div v-for="(blocks, date) in formattedTimeBlocks" :key="date"
+											class="flex h-10 my-2.5 items-center border-b border-gray-100">
+											<div
+												class="sticky left-0 z-20 w-24 px-2.5 py-5 text-sm text-gray-700">
+												{{ date }}
+											</div>
+											<div class="relative flex-grow h-full border-l border-gray-200">
+												<!-- 原有的时间块显示 -->
+												<div v-for="block in blocks" :key="block.id"
+													class="absolute h-8 top-1 rounded text-xs text-white px-1 flex items-center justify-center overflow-hidden whitespace-nowrap opacity-100 hover:opacity-90 transition-opacity cursor-pointer"
+													:style="{
+														left: `${calculateLeftPosition(block.start)}rem`,
+														width: `${calculateDuration(block.start, block.end)}rem`,
+														backgroundColor: block.color
+													}" :title="`${block.description}
+	开始：${formatDetailTime(block.start)}
+	结束：${formatDetailTime(block.end)}
+	持续：${formatDuration(block.start, block.end)}
+	相同颜色累计时间：${formatDurationSimple(calculateColorDurations(blocks)[block.color])}`"
+													@click="editEvent(block, date)">
+													{{ block.displayText }}
+												</div>
 											</div>
 										</div>
 									</div>
 								</div>
 							</div>
 						</div>
+						<div class="text-sm text-gray-500 mt-4">
+							<span>小提示：鼠标滚轮缩放时间轴，拖拽滚动时间轴</span>
+						</div>
 					</div>
 				</div>
-				<el-dialog v-model="editDialogVisible" title="编辑时间事件" width="500px">
-					<el-form :model="editingEvent" label-width="100px">
+				<el-dialog v-model="editDialogVisible" title="编辑时间片" style="width: 70%;">
+					<el-form :model="editingEvent">
 						<el-form-item label="开始时间">
 							<el-time-picker v-model="editingEvent.start" format="HH:mm:ss" />
 						</el-form-item>
@@ -167,7 +161,7 @@
 							<el-time-picker v-model="editingEvent.end" format="HH:mm:ss" />
 						</el-form-item>
 						<el-form-item label="描述">
-							<el-input v-model="editingEvent.description" type="textarea" />
+							<el-input v-model="editingEvent.description" type="textarea" :rows="7"/>
 						</el-form-item>
 						<el-form-item label="颜色">
 							<el-color-picker v-model="editingEvent.color" />
@@ -175,9 +169,9 @@
 					</el-form>
 					<template #footer>
 						<span class="dialog-footer">
+							<el-button type="danger" @click="deleteEvent">删除</el-button>
 							<el-button @click="editDialogVisible = false">取消</el-button>
 							<el-button type="primary" @click="saveEventEdit">保存</el-button>
-							<el-button type="danger" @click="deleteEvent">删除事件</el-button>
 						</span>
 					</template>
 				</el-dialog>
@@ -191,6 +185,15 @@
 					inactive-text="手动导出存档"
 					@change="saveSettings"
 				/>
+				<!-- Global Actions -->
+				<div class="flex gap-2 mt-4">
+					<el-upload class="upload-demo" action="" :auto-upload="false" :show-file-list="false"
+						accept=".json" :on-change="handleFileChange">
+						<el-button type="primary">导入任务</el-button>
+					</el-upload>
+					<el-button type="success" @click="handleGlobalExport('json')">导出所有数据</el-button>
+					<el-button type="danger" @click="clearAllTasks">清除所有数据</el-button>
+				</div>
 			</div>
 			<!-- Footer -->
 			<div class="mt-8 text-center text-gray-500 text-sm">
@@ -214,11 +217,11 @@
 </template>
 
 <script>
+import './styles/index.css'
 import { ref, onMounted, onUnmounted, nextTick, computed, watch } from 'vue'
 import { ElTable, ElTableColumn, ElButton, ElInput, ElContainer, ElMain, ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowDown } from '@element-plus/icons-vue'
 import 'element-plus/dist/index.css'
-import './styles/index.css'
 
 export default {
 	components: {
@@ -276,6 +279,7 @@ export default {
 			editingEventOriginal: null,
 			requireCtrlForZoom: false, // 新增：控制是否需要Ctrl键进行缩放
 			autoExport: true, // Add this line
+			taskNameTooltipText: '双击可编辑项目名称',
 		}
 	},
 	mounted() {
@@ -417,7 +421,6 @@ export default {
 							return;
 						}
 						ElMessage.success('计时已结束');
-						this.taskDescriptions[taskId] = ''; // 清空任务说明
 						this.saveToStorage(); // 保存到本地存储以保持颜色信息
 						// Only auto-export if enabled
 						if (this.autoExport) {
@@ -654,21 +657,13 @@ export default {
 			}
         },
 
-		handleExport(format, task) {
-			if (format === 'json') {
-				const data = {
-					...task,
-					developer: 'createskyblue'
-				};
-				const dataStr = JSON.stringify(data, null, 2);
-				this.downloadFile(dataStr, `task_${task.id}.json`, 'application/json');
-			} else if (format === 'csv') {
-				const headers = ['开始时间,结束时间,描述\n'];
-				const rows = task.timers.map(timer =>
-					`${timer.start},${timer.end || ''},${timer.description}\n`
-				);
-				this.downloadFile(headers.concat(rows).join(''), `task_${task.id}.csv`, 'text/csv');
-			}
+		handleExport(task) {
+			const data = {
+				...task,
+				developer: 'createskyblue'
+			};
+			const dataStr = JSON.stringify(data, null, 2);
+			this.downloadFile(dataStr, `task_${task.id}.json`, 'application/json');
 		},
 		handleGlobalExport(format) {
 			if (format === 'json') {
@@ -755,13 +750,13 @@ export default {
 		},
 		deleteTask(task) {
 			ElMessageBox.prompt(
-				'请输入完整的任务名称以确认删除',
+				'请输入完整的项目名称以确认删除',
 				'警告',
 				{
 					confirmButtonText: '确认',
 					cancelButtonText: '取消',
 					inputPattern: new RegExp(`^${task.name}$`),
-					inputErrorMessage: '任务名称不正确'
+					inputErrorMessage: '项目名称不正确'
 				}
 			).then(({ value }) => {
 				this.tasks = this.tasks.filter(t => t.id !== task.id);
@@ -858,16 +853,23 @@ export default {
 
 			this.editDialogVisible = true;
 		},
-
 		deleteEvent() {
-			if (!this.editingEventOriginal || !this.selectedTask) return;
+		if (!this.editingEventOriginal || !this.selectedTask) return;
 
+		this.$confirm('此操作将永久删除该记录, 是否继续?', '提示', {
+			confirmButtonText: '确定',
+			cancelButtonText: '取消',
+			type: 'warning'
+		}).then(() => {
 			// 从任务的时间记录中删除
 			this.selectedTask.timers = this.selectedTask.timers.filter(timer => timer !== this.editingEventOriginal);
 			this.formattedTimeBlocks = this.formatTimeBlocks(this.selectedTask);
 			this.saveToStorage();
 			ElMessage.success('记录已删除');
 			this.editDialogVisible = false;
+		}).catch(() => {
+			ElMessage.info('已取消删除');
+		});
 		},
 		handleRowClick(row, column) {
 			// 如果点击的是操作列或正在编辑的输入框，不进行跳转
@@ -984,6 +986,12 @@ export default {
 			}).length;
 	  
 			return `${hours}小时${minutes}分钟 (${recordCount})`;
+		  },
+		  taskNameTooltip(row) {
+			return this.taskNameTooltipText;
+		  },
+		  showTooltip(row) {
+			// 可以在这里添加显示提示的逻辑，如果需要
 		  },
 		  // Add new method for saving settings
 		  saveSettings() {
