@@ -73,10 +73,16 @@ npm run build
 
 ## 广告时间
 
-- **B站**: [https://space.bilibili.com/29231553?spm_id_from=333.1365.0.0](https://space.bilibili.com/29231553?spm_id_from=333.1365.0.0)
-- **嘉立创开源社区**: [https://oshwhub.com/createskyblue/works](https://oshwhub.com/createskyblue/works)
-- **嘉立创硬创社**: [https://x.jlc.com/platform/userCenter/r%C3%89%C2%B5%C2%90%C2%8C%C2%B3%C3%A3%C2%B3%C2%8B%C2%9B%C2%BA%C3%8A%C3%8E%C3%A1%C3%87%C2%87%C2%96%C3%8E%C2%BC%C2%99%C2%B5%C2%BD%C2%8Ez](https://x.jlc.com/platform/userCenter/r%C3%89%C2%B5%C2%90%C2%8C%C2%B3%C3%A3%C2%B3%C2%8B%C2%9B%C2%BA%C3%8A%C3%8E%C3%A1%C3%87%C2%87%C3%96%C3%8E%C2%BC%C2%99%C2%B5%C2%BD%C2%8Ez)
+- **B站**: [点击这里](https://space.bilibili.com/29231553?spm_id_from=333.1365.0.0)
+- **嘉立创开源社区**: [点击这里](https://oshwhub.com/createskyblue/works)
+- **嘉立创硬创社**: [点击这里](https://x.jlc.com/platform/userCenter/r%C3%89%C2%B5%C2%90%C2%8C%C2%B3%C3%A3%C2%B3%C2%8B%C2%9B%C2%BA%C3%8A%C3%8E%C3%A1%C3%87%C2%87%C3%96%C3%8E%C2%BC%C2%99%C2%B5%C2%BD%C2%8Ez)
+  
+- 团队承包嵌入式软硬件开发项目（低功耗物联网、Modbus网关）
+- 软件开发（QT上位机、Web上位机、网站）
+- 小程序开发等开发服务
 
-团队承包 嵌入式软硬件开发项目（低功耗物联网、Modbus网关）、软件开发（QT上位机、Web上位机、网站）、小程序开发等开发服务
-
-需求评估->合同签约->开发测试->交付
+流程：
+1. 需求评估
+2. 合同签约
+3. 开发测试
+4. 交付
