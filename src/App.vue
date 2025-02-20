@@ -24,11 +24,21 @@
 						  </span>
 						</template>
 					  </el-table-column>
-					  <el-table-column label="总时长" min-width="100">
+					  <el-table-column label="时长统计(事件计数)" min-width="200">
 						<template v-slot="scope">
-						  <span class="cursor-pointer hover:text-blue-500" @click="selectTask(scope.row.id)">
-							{{ calculateTotalDuration(scope.row.timers) }}
-						  </span>
+							<template>
+							  <span class="cursor-pointer hover:text-blue-500" @click="selectTask(scope.row.id)">
+								{{ calculateTotalDuration(scope.row.timers) }}
+							  </span>
+							</template>
+							<div class="text-sm">
+							  <div>今日：{{ calculatePeriodDuration(scope.row.timers, 'day') }}</div>
+							  <div>本周：{{ calculatePeriodDuration(scope.row.timers, 'week') }}</div>
+							  <div>本月：{{ calculatePeriodDuration(scope.row.timers, 'month') }}</div>
+							  <div>半年：{{ calculatePeriodDuration(scope.row.timers, 'halfYear') }}</div>
+							  <div>今年：{{ calculatePeriodDuration(scope.row.timers, 'year') }}</div>
+							  <div class="mt-1 pt-1 border-t">总计：{{ calculateTotalDuration(scope.row.timers) }}</div>
+							</div>
 						</template>
 					  </el-table-column>
 					  <el-table-column label="任务说明" min-width="200">
@@ -36,7 +46,7 @@
 						  <el-input
 							v-model="taskDescriptions[scope.row.id]"
 							type="textarea"
-							:rows="2"
+							:rows="7"
 							placeholder="请输入任务说明"
 							class="task-description-input"
 						  ></el-input>
@@ -126,14 +136,6 @@
 											{{ date }}
 										</div>
 										<div class="relative flex-grow h-full border-l border-gray-200">
-											<!-- 添加颜色统计显示 -->
-											<div class="absolute right-0 top-0 bg-black bg-opacity-50 text-white text-xs p-1 rounded">
-												<div v-for="(duration, color) in calculateColorDurations(blocks)" :key="color" 
-													class="flex items-center gap-1 mb-1">
-													<div class="w-3 h-3 rounded" :style="{ backgroundColor: color }"></div>
-													<span>{{ formatDurationSimple(duration) }}</span>
-												</div>
-											</div>
 											<!-- 原有的时间块显示 -->
 											<div v-for="block in blocks" :key="block.id"
 												class="absolute h-8 top-1 rounded text-xs text-white px-1 flex items-center justify-center overflow-hidden whitespace-nowrap opacity-100 hover:opacity-90 transition-opacity cursor-pointer"
@@ -890,7 +892,63 @@ export default {
 				return `${hours}h${minutes}m`;
 			}
 			return `${minutes}m`;
-		}
+		},
+		calculatePeriodDuration(timers, period) {
+			if (!timers?.length) return '0小时0分钟';
+			
+			const now = new Date();
+			const startTime = new Date();
+			
+			// 设置时间段的起始时间
+			switch(period) {
+			  case 'day':
+				startTime.setHours(0, 0, 0, 0);
+				break;
+			  case 'week':
+				startTime.setDate(now.getDate() - now.getDay());
+				startTime.setHours(0, 0, 0, 0);
+				break;
+			  case 'month':
+				startTime.setDate(1);
+				startTime.setHours(0, 0, 0, 0);
+				break;
+			  case 'halfYear':
+				startTime.setMonth(now.getMonth() - 6);
+				startTime.setHours(0, 0, 0, 0);
+				break;
+			  case 'year':
+				startTime.setMonth(0, 1);
+				startTime.setHours(0, 0, 0, 0);
+				break;
+			}
+	  
+			// 计算指定时间段内的总时长
+			const totalSeconds = timers.reduce((acc, timer) => {
+			  const start = new Date(timer.start);
+			  const end = timer.end ? new Date(timer.end) : now;
+			  
+			  // 如果时间段完全在范围外，跳过
+			  if (end < startTime || start > now) return acc;
+			  
+			  // 计算有效的开始和结束时间
+			  const effectiveStart = start < startTime ? startTime : start;
+			  const effectiveEnd = end > now ? now : end;
+			  
+			  return acc + (effectiveEnd - effectiveStart) / 1000;
+			}, 0);
+	  
+			const hours = Math.floor(totalSeconds / 3600);
+			const minutes = Math.floor((totalSeconds % 3600) / 60);
+			
+			// 获取该时间段内的记录数
+			const recordCount = timers.filter(timer => {
+			  const start = new Date(timer.start);
+			  const end = timer.end ? new Date(timer.end) : now;
+			  return !(end < startTime || start > now);
+			}).length;
+	  
+			return `${hours}小时${minutes}分钟 (${recordCount})`;
+		  }
 	}
 }
 </script>
