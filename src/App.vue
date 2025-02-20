@@ -199,6 +199,14 @@
 					<a href="https://github.com/createskyblue/Task-Time-Tracker" target="_blank" class="text-blue-500 hover:underline">
 						Visit on GitHub
 					</a>
+					|
+					<a href="https://github.com/createskyblue/Task-Time-Tracker/issues" target="_blank" class="text-blue-500 hover:underline">
+						反馈问题
+					</a>
+					|
+					<a href="mailto:createskyblue@outlook.com" target="_blank" class="text-blue-500 hover:underline">
+						反馈邮箱: createskyblue@outlook.com
+					</a>
 				</p>
 			</div>
 		</el-main>
