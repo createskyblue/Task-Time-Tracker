@@ -10,69 +10,66 @@
 				<div>
 					<!-- Task List -->
 					<el-table :data="tasks" style="width: 100%" @row-click="handleRowClick">
-					  <el-table-column label="项目名称" min-width="150">
-						<template v-slot="scope">
-						  <el-tooltip :content="taskNameTooltip(scope.row)" placement="top">
-							<span>
-							  <el-input
-								v-if="scope.row.isEditing"
-								v-model="scope.row.editingName"
-								@blur="finishEdit(scope.row)"
-								@keyup.enter="finishEdit(scope.row)"
-								ref="nameInput"
-							  />
-							  <span v-else @dblclick="startEdit(scope.row)" class="cursor-pointer hover:text-blue-500">
-								{{ scope.row.name }}
-							  </span>
-							  <el-icon-question class="ml-1 cursor-pointer" @click="showTooltip(scope.row)" />
-							</span>
-						  </el-tooltip>
-						</template>
-					  </el-table-column>
-					  <el-table-column label="时长统计(事件计数)" min-width="200">
-						<template v-slot="scope">
-							<template>
-							  <span class="cursor-pointer hover:text-blue-500" @click="selectTask(scope.row.id)">
-								{{ calculateTotalDuration(scope.row.timers) }}
-							  </span>
+						<el-table-column label="项目名称" min-width="150">
+							<template v-slot="scope">
+								<el-tooltip :content="taskNameTooltip(scope.row)" placement="top">
+									<span>
+										<el-input v-if="scope.row.isEditing" v-model="scope.row.editingName"
+											@blur="finishEdit(scope.row)" @keyup.enter="finishEdit(scope.row)"
+											ref="nameInput" />
+										<span v-else @dblclick="startEdit(scope.row)"
+											class="cursor-pointer hover:text-blue-500">
+											{{ scope.row.name }}
+										</span>
+										<el-icon-question class="ml-1 cursor-pointer" @click="showTooltip(scope.row)" />
+									</span>
+								</el-tooltip>
 							</template>
-							<div class="text-sm">
-							  <div>今日：{{ calculatePeriodDuration(scope.row.timers, 'day') }}</div>
-							  <div>本周：{{ calculatePeriodDuration(scope.row.timers, 'week') }}</div>
-							  <div>本月：{{ calculatePeriodDuration(scope.row.timers, 'month') }}</div>
-							  <div>半年：{{ calculatePeriodDuration(scope.row.timers, 'halfYear') }}</div>
-							  <div>今年：{{ calculatePeriodDuration(scope.row.timers, 'year') }}</div>
-							  <div class="mt-1 pt-1 border-t">总计：{{ calculateTotalDuration(scope.row.timers) }}</div>
-							</div>
-						</template>
-					  </el-table-column>
-					  <el-table-column label="任务说明" min-width="300">
-						<template v-slot="scope">
-						  <el-input
-							v-model="taskDescriptions[scope.row.id]"
-							type="textarea"
-							:rows="7"
-							placeholder="请输入任务说明"
-							class="task-description-input"
-						  ></el-input>
-						</template>
-					  </el-table-column>
-					  <el-table-column label="计时状态" min-width="100">
-						<template v-slot="scope">
-						  <span v-if="isTaskRunning(scope.row.id)" class="text-blue-500 font-bold">
-							已计时: {{ getRunningTime(scope.row.id) }}
-						  </span>
-						  <span v-else>未开始计时</span>
-						</template>
-					  </el-table-column>
-					  <el-table-column label="部分操作" min-width="100">
-						<template v-slot="scope">
-						  <div class="flex flex-wrap">
-							<el-button style="margin-left: 10px;" class="mb-2" @click.stop="startTimer(scope.row.id)" type="primary" :disabled="isTaskRunning(scope.row.id)">开始计时</el-button>
-							<el-button style="margin-left: 10px;" class="mb-2" @click.stop="stopTimer(scope.row.id)" type="danger" :disabled="!isTaskRunning(scope.row.id)">结束计时</el-button>
-						  </div>
-						</template>
-					  </el-table-column>
+						</el-table-column>
+						<el-table-column label="时长统计(事件计数)" min-width="200">
+							<template v-slot="scope">
+								<template>
+									<span class="cursor-pointer hover:text-blue-500" @click="selectTask(scope.row.id)">
+										{{ calculateTotalDuration(scope.row.timers) }}
+									</span>
+								</template>
+								<div class="text-sm">
+									<div>今日：{{ calculatePeriodDuration(scope.row.timers, 'day') }}</div>
+									<div>本周：{{ calculatePeriodDuration(scope.row.timers, 'week') }}</div>
+									<div>本月：{{ calculatePeriodDuration(scope.row.timers, 'month') }}</div>
+									<div>半年：{{ calculatePeriodDuration(scope.row.timers, 'halfYear') }}</div>
+									<div>今年：{{ calculatePeriodDuration(scope.row.timers, 'year') }}</div>
+									<div class="mt-1 pt-1 border-t">总计：{{ calculateTotalDuration(scope.row.timers) }}
+									</div>
+								</div>
+							</template>
+						</el-table-column>
+						<el-table-column label="任务说明" min-width="300">
+							<template v-slot="scope">
+								<el-input v-model="taskDescriptions[scope.row.id]" type="textarea" :rows="7"
+									placeholder="请输入任务说明" class="task-description-input"></el-input>
+							</template>
+						</el-table-column>
+						<el-table-column label="计时状态" min-width="100">
+							<template v-slot="scope">
+								<span v-if="isTaskRunning(scope.row.id)" class="text-blue-500 font-bold">
+									已计时: {{ getRunningTime(scope.row.id) }}
+								</span>
+								<span v-else>未开始计时</span>
+							</template>
+						</el-table-column>
+						<el-table-column label="部分操作" min-width="100">
+							<template v-slot="scope">
+								<div class="flex flex-wrap">
+									<el-button style="margin-left: 10px;" class="mb-2"
+										@click.stop="startTimer(scope.row.id)" type="primary"
+										:disabled="isTaskRunning(scope.row.id)">开始计时</el-button>
+									<el-button style="margin-left: 10px;" class="mb-2"
+										@click.stop="stopTimer(scope.row.id)" type="danger"
+										:disabled="!isTaskRunning(scope.row.id)">结束计时</el-button>
+								</div>
+							</template>
+						</el-table-column>
 					</el-table>
 					<!-- Add Task -->
 					<div class="flex mt-5 w-2/4">
@@ -80,9 +77,9 @@
 						<el-button @click="addTask" type="success">添加项目</el-button>
 					</div>
 				</div>
-				
+
 				<!-- Time Records Display -->
-				<div  class="mt-5 p-5 border border-gray-200 rounded-lg">
+				<div class="mt-5 p-5 border border-gray-200 rounded-lg">
 					<div v-if="!selectedTask">
 						<h3 class="text-lg font-medium mb-4">时间线</h3>
 						<div class="text-sm text-gray-500 mt-4">
@@ -90,7 +87,7 @@
 						</div>
 					</div>
 					<div v-if="selectedTask">
-						<h3 class="text-lg font-medium mb-4">时间线 ( {{ selectedTask.name||"" }} )</h3>
+						<h3 class="text-lg font-medium mb-4">时间线 ( {{ selectedTask.name || "" }} )</h3>
 						<!-- <div class="flex items-center gap-4 px-5 mb-4">
 							<span>时间单位宽度: {{ (baseUnitWidth * 3600).toFixed(1) }}px/小时</span>
 							<el-slider v-model="baseUnitWidth" :min="0.0004" :max="1" :step="0.0001"
@@ -98,48 +95,68 @@
 						</div> -->
 						<!-- 增加一行小字提示：小提示：滚轮缩放时间轴，拖拽滚动时间轴 -->
 						<div class="mb-4">
-	
+
 							<el-button type="success" @click="addNewEvent">新增记录</el-button>
 							<el-button @click.stop="handleExport(selectedTask)" type="success">导出</el-button>
 							<el-button @click="deleteTask(selectedTask)" type="danger">删除</el-button>
 						</div>
-	
+
 						<div class="relative border border-gray-200 rounded-lg overflow-hidden">
-							<div @wheel.prevent="handleWheel" @mousedown="startDrag" @mousemove="onDrag" @mouseup="stopDrag"
-								@mouseleave="stopDrag" ref="scrollContainer"
+							<div @wheel.prevent="handleWheel" @mousedown="startDrag" @mousemove="onDrag"
+								@mouseup="stopDrag" @mouseleave="stopDrag" ref="scrollContainer"
 								style="scrollbar-width: none;  min-height: 200px;"
 								class="relative w-full overflow-x-auto cursor-grab active:cursor-grabbing select-none">
 								<div class="timeline-content" :style="{ minWidth: `${24 * 3600 * baseUnitWidth}rem` }">
-									<div class="sticky top-0 z-10 flex h-8 items-center bg-gray-50 border-b border-gray-200 pl-24">
+									<div
+										class="sticky top-0 z-10 flex h-8 items-center bg-gray-50 border-b border-gray-200 pl-24">
 										<div v-for="mark in timeScaleMarks" :key="mark.time"
 											:style="{ width: `${mark.width}rem` }"
-											class="flex-shrink-0 text-xs text-gray-600 text-center border-r border-gray-200">
+											class="flex-shrink-0 text-xs text-gray-600 text-center border-r border-gray-200 relative ">
 											{{ mark.label }}
+											<div class="absolute top-0 bottom-0 left-0 w-[0.1px] bg-gray-300"></div>
+											<!-- 增加垂直线 -->
 										</div>
 									</div>
-	
+
 									<div class="time-blocks-container">
 										<div v-for="(blocks, date) in formattedTimeBlocks" :key="date"
-											class="flex h-10 my-2.5 items-center border-b border-gray-100">
-											<div
-												class="sticky left-0 z-20 w-24 px-2.5 py-5 text-sm text-gray-700">
+											class="flex h-10 my-2.5 items-center border-b border-gray-300">
+											<div class="sticky left-0 py-1 w-24 px-4 text-sm text-gray-700 rounded-md -mt-2">
 												{{ date }}
 											</div>
-											<div class="relative flex-grow h-full border-l border-gray-200">
-												<!-- 原有的时间块显示 -->
-												<div v-for="block in blocks" :key="block.id"
-													class="absolute h-8 top-1 rounded text-xs text-white px-1 flex items-center justify-center overflow-hidden whitespace-nowrap opacity-100 hover:opacity-90 transition-opacity cursor-pointer"
-													:style="{
-														left: `${calculateLeftPosition(block.start)}rem`,
-														width: `${calculateDuration(block.start, block.end)}rem`,
-														backgroundColor: block.color
-													}" :title="`${block.description}
-	开始：${formatDetailTime(block.start)}
-	结束：${formatDetailTime(block.end)}
-	持续：${formatDuration(block.start, block.end)}
-	相同颜色累计时间：${formatDurationSimple(calculateColorDurations(blocks)[block.color])}`"
-													@click="editEvent(block, date)">
-													{{ block.displayText }}
+											<!-- Container with relative positioning -->
+											<div class="relative w-full">
+												<!-- Time scale marks layer -->
+												<div class="absolute inset-0 flex  -mt-7">
+													<div v-for="mark in timeScaleMarks" :key="mark.time2"
+														:style="{ width: `${mark.width}rem` }"
+														class="flex-shrink-0 text-center relative">
+														<div
+															class="absolute top-0 bottom-0 left-0 w-[0.1px] bg-gray-300 h-12">
+														</div>
+													</div>
+												</div>
+
+												<!-- Blocks layer -->
+												<div class="absolute inset-0 -mt-6">
+													<div class="relative h-full w-full">
+														<div v-for="block in blocks" :key="block.id"
+															class="absolute h-8 top-1 rounded text-xs text-white px-1 flex items-center justify-center overflow-hidden whitespace-nowrap opacity-100 hover:opacity-90 transition-opacity cursor-pointer"
+															:style="{
+																left: `${calculateLeftPosition(block.start)}rem`,
+																width: `${calculateDuration(block.start, block.end)}rem`,
+																backgroundColor: block.color
+															}" :title="`
+开始：${formatDetailTime(block.start)}
+结束：${formatDetailTime(block.end)}
+持续：${formatDuration(block.start, block.end)}
+相同颜色累计时间：${formatDurationSimple(calculateColorDurations(blocks)[block.color])}
+
+${block.description}`"
+															@click="editEvent(block, date)">
+															{{ block.displayText }}
+														</div>
+													</div>
 												</div>
 											</div>
 										</div>
@@ -161,7 +178,7 @@
 							<el-time-picker v-model="editingEvent.end" format="HH:mm:ss" />
 						</el-form-item>
 						<el-form-item label="描述">
-							<el-input v-model="editingEvent.description" type="textarea" :rows="7"/>
+							<el-input v-model="editingEvent.description" type="textarea" :rows="7" />
 						</el-form-item>
 						<el-form-item label="颜色">
 							<el-color-picker v-model="editingEvent.color" />
@@ -179,16 +196,11 @@
 			<!-- Settings Section -->
 			<div class="mt-4 p-4 border border-gray-200 rounded-lg">
 				<h3 class="text-lg font-medium mb-4">设置</h3>
-				<el-switch
-					v-model="autoExport"
-					active-text="自动导出存档"
-					inactive-text="手动导出存档"
-					@change="saveSettings"
-				/>
+				<el-switch v-model="autoExport" active-text="自动导出存档" inactive-text="手动导出存档" @change="saveSettings" />
 				<!-- Global Actions -->
 				<div class="flex gap-2 mt-4">
-					<el-upload class="upload-demo" action="" :auto-upload="false" :show-file-list="false"
-						accept=".json" :on-change="handleFileChange">
+					<el-upload class="upload-demo" action="" :auto-upload="false" :show-file-list="false" accept=".json"
+						:on-change="handleFileChange">
 						<el-button type="primary">导入任务</el-button>
 					</el-upload>
 					<el-button type="success" @click="handleGlobalExport('json')">导出所有数据</el-button>
@@ -197,13 +209,16 @@
 			</div>
 			<!-- Footer -->
 			<div class="mt-8 text-center text-gray-500 text-sm">
-				<p>Created by <a href="https://github.com/createskyblue" target="_blank" class="text-blue-500 hover:underline">createskyblue</a></p>
+				<p>Created by <a href="https://github.com/createskyblue" target="_blank"
+						class="text-blue-500 hover:underline">createskyblue</a></p>
 				<p class="mt-1">
-					<a href="https://github.com/createskyblue/Task-Time-Tracker" target="_blank" class="text-blue-500 hover:underline">
+					<a href="https://github.com/createskyblue/Task-Time-Tracker" target="_blank"
+						class="text-blue-500 hover:underline">
 						Visit on GitHub
 					</a>
 					|
-					<a href="https://github.com/createskyblue/Task-Time-Tracker/issues" target="_blank" class="text-blue-500 hover:underline">
+					<a href="https://github.com/createskyblue/Task-Time-Tracker/issues" target="_blank"
+						class="text-blue-500 hover:underline">
 						反馈问题
 					</a>
 					|
@@ -370,14 +385,14 @@ export default {
 			let s = Math.floor(Math.random() * 51) + 45;
 			//75~95
 			let v = Math.floor(Math.random() * 21) + 75;
-		
+
 			// 将 HSV 转换为 RGB
 			let rgb = this.hsvToRgb(h, s, v);
-		
+
 			// 返回 RGB 颜色值
 			return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
 		},
-		
+
 		hsvToRgb(h, s, v) {
 			s /= 100;
 			v /= 100;
@@ -595,41 +610,41 @@ export default {
 			return `${hours}小时${minutes}分钟 (${timers.length})`;
 		},
 		splitCrossDayTimers() {
-            this.tasks.forEach(task => {
-                task.timers = task.timers.flatMap(timer => {
-                    if (!timer.end) return [timer]; // 如果任务仍在进行中，不拆分
+			this.tasks.forEach(task => {
+				task.timers = task.timers.flatMap(timer => {
+					if (!timer.end) return [timer]; // 如果任务仍在进行中，不拆分
 
-                    const start = new Date(timer.start);
-                    const end = new Date(timer.end);
-                    const timers = [];
+					const start = new Date(timer.start);
+					const end = new Date(timer.end);
+					const timers = [];
 
-                    let currentStart = start;
-                    while (currentStart < end) {
-                        const currentEnd = new Date(currentStart);
-                        currentEnd.setHours(23, 59, 59, 999);
-                        if (currentEnd > end) {
-                            currentEnd.setTime(end.getTime());
-                        }
-                        // 确保不会在0点处多创建一个0秒的记录
-                        // 检查毫秒级别的误差
-                        if (currentStart.getTime() < currentEnd.getTime()) {
-                            const duration = (currentEnd - currentStart) / 1000; // Duration in seconds
-                            if (duration > 1) {
-                                timers.push({
-                                    start: new Date(currentStart),
-                                    end: new Date(currentEnd),
-                                    description: timer.description,
-                                    color: timer.color
-                                });
-                            }
-                        }
-                        currentStart.setDate(currentStart.getDate() + 1); // 移动到下一天的零点
-                        currentStart.setHours(0, 0, 0, 0);
-                    }
-                    return timers;
-                });
-            });
-        },
+					let currentStart = start;
+					while (currentStart < end) {
+						const currentEnd = new Date(currentStart);
+						currentEnd.setHours(23, 59, 59, 999);
+						if (currentEnd > end) {
+							currentEnd.setTime(end.getTime());
+						}
+						// 确保不会在0点处多创建一个0秒的记录
+						// 检查毫秒级别的误差
+						if (currentStart.getTime() < currentEnd.getTime()) {
+							const duration = (currentEnd - currentStart) / 1000; // Duration in seconds
+							if (duration > 1) {
+								timers.push({
+									start: new Date(currentStart),
+									end: new Date(currentEnd),
+									description: timer.description,
+									color: timer.color
+								});
+							}
+						}
+						currentStart.setDate(currentStart.getDate() + 1); // 移动到下一天的零点
+						currentStart.setHours(0, 0, 0, 0);
+					}
+					return timers;
+				});
+			});
+		},
 
 		saveToStorage() {
 			this.splitCrossDayTimers(); // 拆分跨天时间记录
@@ -649,50 +664,50 @@ export default {
 				ElMessage.success('保存成功');
 			}, 3000);
 		},
-		
 
-        loadFromStorage() {
-            const data = localStorage.getItem(this.STORAGE_KEY);
-            if (data) {
-                const parsed = JSON.parse(data);
-                // 转换时间字符串为Date对象
-                parsed.tasks.forEach(task => {
-                    task.timers.forEach(timer => {
-                        timer.start = new Date(timer.start);
-                        if (timer.end) timer.end = new Date(timer.end);
-                    });
-                });
-                this.tasks = parsed.tasks;
-                this.taskDescriptions = parsed.taskDescriptions || {};
-                this.splitCrossDayTimers(); // 拆分跨天时间记录
-            }
+
+		loadFromStorage() {
+			const data = localStorage.getItem(this.STORAGE_KEY);
+			if (data) {
+				const parsed = JSON.parse(data);
+				// 转换时间字符串为Date对象
+				parsed.tasks.forEach(task => {
+					task.timers.forEach(timer => {
+						timer.start = new Date(timer.start);
+						if (timer.end) timer.end = new Date(timer.end);
+					});
+				});
+				this.tasks = parsed.tasks;
+				this.taskDescriptions = parsed.taskDescriptions || {};
+				this.splitCrossDayTimers(); // 拆分跨天时间记录
+			}
 			// Load settings
 			const settings = localStorage.getItem('taskTimeTracker_settings');
 			if (settings) {
 				const parsed = JSON.parse(settings);
 				this.autoExport = parsed.autoExport ?? true;
 			}
-        },
-		handleExport(task) {
-		const data = {
-			...task,
-			developer: 'createskyblue'
-		};
-		const dataStr = JSON.stringify(data, null, 2);
-		const timestamp = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
-		this.downloadFile(dataStr, `时探客_TaskTimeTracker_Task_${task.name}_${timestamp}.json`, 'application/json');
 		},
-		handleGlobalExport(format) {
-		if (format === 'json') {
+		handleExport(task) {
 			const data = {
-			tasks: this.tasks,
-			taskDescriptions: this.taskDescriptions,
-			developer: 'createskyblue'
+				...task,
+				developer: 'createskyblue'
 			};
 			const dataStr = JSON.stringify(data, null, 2);
 			const timestamp = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
-			this.downloadFile(dataStr, `时探客_TaskTimeTracker_AllTasks_${timestamp}.json`, 'application/json');
-		}
+			this.downloadFile(dataStr, `时探客_TaskTimeTracker_Task_${task.name}_${timestamp}.json`, 'application/json');
+		},
+		handleGlobalExport(format) {
+			if (format === 'json') {
+				const data = {
+					tasks: this.tasks,
+					taskDescriptions: this.taskDescriptions,
+					developer: 'createskyblue'
+				};
+				const dataStr = JSON.stringify(data, null, 2);
+				const timestamp = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
+				this.downloadFile(dataStr, `时探客_TaskTimeTracker_AllTasks_${timestamp}.json`, 'application/json');
+			}
 		},
 		downloadFile(content, filename, type) {
 			const blob = new Blob([content], { type });
@@ -743,7 +758,7 @@ export default {
 					if (file.raw.name.endsWith('.json')) {
 						const rawData = JSON.parse(e.target.result);
 						const processedData = this.processImportedData(rawData);
-						
+
 						// 检查任务ID是否重复
 						processedData.forEach(task => {
 							const exists = this.tasks.some(t => t.id === task.id);
@@ -767,67 +782,67 @@ export default {
 			reader.readAsText(file.raw);
 		},
 		deleteTask(task) {
-		  ElMessageBox.prompt(
-			`请输入完整的项目名称以确认删除：<span class="bg-red-100 text-red-600 px-1 mx-1 rounded-md" ">${task.name}</span>`,
-			'警告',
-			{
-			  confirmButtonText: '确认',
-			  cancelButtonText: '取消',
-			  inputPattern: new RegExp(`^${task.name}$`),
-			  inputErrorMessage: '项目名称不正确',
-			  dangerouslyUseHTMLString: true
-			}
-		  ).then(({ value }) => {
-			this.tasks = this.tasks.filter(t => t.id !== task.id);
-			this.saveToStorage();
-			ElMessage.success('删除成功');
-			// 刷新页面
-			location.reload();
-		  }).catch(() => {
-			// 用户取消或输入错误
-		  });
+			ElMessageBox.prompt(
+				`请输入完整的项目名称以确认删除：<span class="bg-red-100 text-red-600 px-1 mx-1 rounded-md" ">${task.name}</span>`,
+				'警告',
+				{
+					confirmButtonText: '确认',
+					cancelButtonText: '取消',
+					inputPattern: new RegExp(`^${task.name}$`),
+					inputErrorMessage: '项目名称不正确',
+					dangerouslyUseHTMLString: true
+				}
+			).then(({ value }) => {
+				this.tasks = this.tasks.filter(t => t.id !== task.id);
+				this.saveToStorage();
+				ElMessage.success('删除成功');
+				// 刷新页面
+				location.reload();
+			}).catch(() => {
+				// 用户取消或输入错误
+			});
 		},
 		clearAllTasks() {
-		  ElMessageBox.prompt(
-			`请输入<span class="bg-red-100 text-red-600 px-1 mx-1 rounded-md">我确定删除所有数据</span>以确认`,
-			'警告',
-			{
-			  confirmButtonText: '确认',
-			  cancelButtonText: '取消',
-			  inputPattern: /^我确定删除所有数据$/,
-			  inputErrorMessage: '输入内容不正确',
-			  dangerouslyUseHTMLString: true
-			}
-		  ).then(({ value }) => {
-			// 强制下载存档
-			this.handleGlobalExport('json');
-			// 删除开始
-			this.tasks = [];
-			this.saveToStorage();
-			ElMessage.success('已清除所有数据');
-			// 刷新页面
-			location.reload();
-		  }).catch(() => {
-			// 用户取消或输入错误
-		  });
+			ElMessageBox.prompt(
+				`请输入<span class="bg-red-100 text-red-600 px-1 mx-1 rounded-md">我确定删除所有数据</span>以确认`,
+				'警告',
+				{
+					confirmButtonText: '确认',
+					cancelButtonText: '取消',
+					inputPattern: /^我确定删除所有数据$/,
+					inputErrorMessage: '输入内容不正确',
+					dangerouslyUseHTMLString: true
+				}
+			).then(({ value }) => {
+				// 强制下载存档
+				this.handleGlobalExport('json');
+				// 删除开始
+				this.tasks = [];
+				this.saveToStorage();
+				ElMessage.success('已清除所有数据');
+				// 刷新页面
+				location.reload();
+			}).catch(() => {
+				// 用户取消或输入错误
+			});
 		},
 		editEvent(block, date) {
 			// 保存对原始timer的引用和日期
 			this.editingEventOriginal = block.originalTimer;
 			this.editingEventDate = date;
-			
+
 			// 初始化编辑数据
 			this.editingEvent = {
-			  start: new Date(block.start),
-			  end: new Date(block.end),
-			  description: block.description || '',
-			  color: block.color || '#409EFF'
+				start: new Date(block.start),
+				end: new Date(block.end),
+				description: block.description || '',
+				color: block.color || '#409EFF'
 			};
-			
+
 			this.editDialogVisible = true;
-		  },
-		
-		  saveEventEdit() {
+		},
+
+		saveEventEdit() {
 			if (!this.editingEvent || !this.selectedTask) return;
 
 			const newEvent = {
@@ -856,9 +871,9 @@ export default {
 
 			ElMessage.success(this.editingEventOriginal ? '记录已更新' : '新记录已保存');
 			this.editDialogVisible = false;
-		  },
+		},
 
-		  addNewEvent() {
+		addNewEvent() {
 			if (!this.selectedTask) {
 				ElMessage.error('请先打开一个任务的时间线');
 				return;
@@ -876,22 +891,22 @@ export default {
 			this.editDialogVisible = true;
 		},
 		deleteEvent() {
-		if (!this.editingEventOriginal || !this.selectedTask) return;
+			if (!this.editingEventOriginal || !this.selectedTask) return;
 
-		this.$confirm('此操作将永久删除该记录, 是否继续?', '提示', {
-			confirmButtonText: '确定',
-			cancelButtonText: '取消',
-			type: 'warning'
-		}).then(() => {
-			// 从任务的时间记录中删除
-			this.selectedTask.timers = this.selectedTask.timers.filter(timer => timer !== this.editingEventOriginal);
-			this.formattedTimeBlocks = this.formatTimeBlocks(this.selectedTask);
-			this.saveToStorage();
-			ElMessage.success('记录已删除');
-			this.editDialogVisible = false;
-		}).catch(() => {
-			ElMessage.info('已取消删除');
-		});
+			this.$confirm('此操作将永久删除该记录, 是否继续?', '提示', {
+				confirmButtonText: '确定',
+				cancelButtonText: '取消',
+				type: 'warning'
+			}).then(() => {
+				// 从任务的时间记录中删除
+				this.selectedTask.timers = this.selectedTask.timers.filter(timer => timer !== this.editingEventOriginal);
+				this.formattedTimeBlocks = this.formatTimeBlocks(this.selectedTask);
+				this.saveToStorage();
+				ElMessage.success('记录已删除');
+				this.editDialogVisible = false;
+			}).catch(() => {
+				ElMessage.info('已取消删除');
+			});
 		},
 		handleRowClick(row, column) {
 			// 如果点击的是操作列或正在编辑的输入框，不进行跳转
@@ -955,72 +970,72 @@ export default {
 		},
 		calculatePeriodDuration(timers, period) {
 			if (!timers?.length) return '0小时0分钟';
-			
+
 			const now = new Date();
 			const startTime = new Date();
-			
+
 			// 设置时间段的起始时间
-			switch(period) {
-			  case 'day':
-				startTime.setHours(0, 0, 0, 0);
-				break;
-			  case 'week':
-				startTime.setDate(now.getDate() - now.getDay());
-				startTime.setHours(0, 0, 0, 0);
-				break;
-			  case 'month':
-				startTime.setDate(1);
-				startTime.setHours(0, 0, 0, 0);
-				break;
-			  case 'halfYear':
-				startTime.setMonth(now.getMonth() - 6);
-				startTime.setHours(0, 0, 0, 0);
-				break;
-			  case 'year':
-				startTime.setMonth(0, 1);
-				startTime.setHours(0, 0, 0, 0);
-				break;
+			switch (period) {
+				case 'day':
+					startTime.setHours(0, 0, 0, 0);
+					break;
+				case 'week':
+					startTime.setDate(now.getDate() - now.getDay());
+					startTime.setHours(0, 0, 0, 0);
+					break;
+				case 'month':
+					startTime.setDate(1);
+					startTime.setHours(0, 0, 0, 0);
+					break;
+				case 'halfYear':
+					startTime.setMonth(now.getMonth() - 6);
+					startTime.setHours(0, 0, 0, 0);
+					break;
+				case 'year':
+					startTime.setMonth(0, 1);
+					startTime.setHours(0, 0, 0, 0);
+					break;
 			}
-	  
+
 			// 计算指定时间段内的总时长
 			const totalSeconds = timers.reduce((acc, timer) => {
-			  const start = new Date(timer.start);
-			  const end = timer.end ? new Date(timer.end) : now;
-			  
-			  // 如果时间段完全在范围外，跳过
-			  if (end < startTime || start > now) return acc;
-			  
-			  // 计算有效的开始和结束时间
-			  const effectiveStart = start < startTime ? startTime : start;
-			  const effectiveEnd = end > now ? now : end;
-			  
-			  return acc + (effectiveEnd - effectiveStart) / 1000;
+				const start = new Date(timer.start);
+				const end = timer.end ? new Date(timer.end) : now;
+
+				// 如果时间段完全在范围外，跳过
+				if (end < startTime || start > now) return acc;
+
+				// 计算有效的开始和结束时间
+				const effectiveStart = start < startTime ? startTime : start;
+				const effectiveEnd = end > now ? now : end;
+
+				return acc + (effectiveEnd - effectiveStart) / 1000;
 			}, 0);
-	  
+
 			const hours = Math.floor(totalSeconds / 3600);
 			const minutes = Math.floor((totalSeconds % 3600) / 60);
-			
+
 			// 获取该时间段内的记录数
 			const recordCount = timers.filter(timer => {
-			  const start = new Date(timer.start);
-			  const end = timer.end ? new Date(timer.end) : now;
-			  return !(end < startTime || start > now);
+				const start = new Date(timer.start);
+				const end = timer.end ? new Date(timer.end) : now;
+				return !(end < startTime || start > now);
 			}).length;
-	  
+
 			return `${hours}小时${minutes}分钟 (${recordCount})`;
-		  },
-		  taskNameTooltip(row) {
+		},
+		taskNameTooltip(row) {
 			return this.taskNameTooltipText;
-		  },
-		  showTooltip(row) {
+		},
+		showTooltip(row) {
 			// 可以在这里添加显示提示的逻辑，如果需要
-		  },
-		  // Add new method for saving settings
-		  saveSettings() {
+		},
+		// Add new method for saving settings
+		saveSettings() {
 			localStorage.setItem('taskTimeTracker_settings', JSON.stringify({
-			  autoExport: this.autoExport
+				autoExport: this.autoExport
 			}));
-		  },
+		},
 	}
 }
 </script>
@@ -1046,27 +1061,27 @@ export default {
 
 /* 任务说明输入框样式 */
 .task-description-input .el-textarea__inner {
-  min-height: 60px !important;
-  font-size: 12px;
-  line-height: 1.4;
-  padding: 4px 8px;
+	min-height: 60px !important;
+	font-size: 12px;
+	line-height: 1.4;
+	padding: 4px 8px;
 }
 
 .task-description-input.el-textarea {
-  --el-input-hover-border-color: var(--el-border-color-hover);
+	--el-input-hover-border-color: var(--el-border-color-hover);
 }
 
 .el-dialog__body {
-  padding: 20px;
+	padding: 20px;
 }
 
 .dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
+	display: flex;
+	justify-content: flex-end;
+	gap: 10px;
 }
 
 .el-table .el-input {
-  margin: -5px 0;
+	margin: -5px 0;
 }
 </style>
