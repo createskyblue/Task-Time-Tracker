@@ -119,8 +119,10 @@
 										<div v-for="(blocks, date) in formattedTimeBlocks" :key="date"
 											class="flex h-10 my-2.5 items-center border-b border-gray-300">
 											<div
-												class="sticky left-0 py-1 w-24 px-4 text-sm text-gray-700 rounded-md -mt-2">
-												{{ date }}
+												class="sticky left-0 py-1 w-24 ps-2 text-sm text-gray-700 rounded-md -mt-2"
+												style="width:96px">
+												<div class="font-medium">{{ date }}</div>
+												<div class="text-xs text-gray-500">{{ calculateDayTotal(blocks) }}</div>
 											</div>
 											<!-- Container with relative positioning -->
 											<div class="relative w-full">
@@ -611,7 +613,7 @@ export default {
 				const container = this.$refs.scrollContainer;
 				if (!container) return;
 
-				// 记录当前鼠标位置用��滑块缩放
+				// 记录当前鼠标位置用于滑块缩放
 				container._lastMouseX = e.clientX;
 
 				const rect = container.getBoundingClientRect();
@@ -1084,6 +1086,16 @@ export default {
 			localStorage.setItem('taskTimeTracker_settings', JSON.stringify({
 				autoExport: this.autoExport
 			}));
+		},
+		calculateDayTotal(blocks) {
+			const totalSeconds = blocks.reduce((acc, block) => {
+				const duration = (block.end - block.start) / 1000;
+				return acc + duration;
+			}, 0);
+			
+			const hours = Math.floor(totalSeconds / 3600);
+			const minutes = Math.floor((totalSeconds % 3600) / 60);
+			return `${hours}h${minutes}m (${blocks.length})`;
 		},
 	}
 }
