@@ -1,67 +1,69 @@
-# 时探客 Task Time Tracker
+# Task Time Tracker
 
-一个简洁易用的个人项目时间追踪工具，帮助你记录和管理各项任务的时间投入。
+English | [简体中文](README_CN.md)
 
-*业余个人开发，非客单质量*
+A simple and user-friendly personal project time tracking tool to help you record and manage time spent on various tasks.
 
-[在线体验：https://createskyblue.github.io/Task-Time-Tracker/](https://createskyblue.github.io/Task-Time-Tracker/)
+*Personal hobby project, not commercial quality*
 
-## 功能特点
+[Live Demo: https://createskyblue.github.io/Task-Time-Tracker/](https://createskyblue.github.io/Task-Time-Tracker/)
 
-- 🕒 实时计时功能
-- 📊 可视化时间线展示
-- 🎨 自动颜色区分不同时间段
-- 📝 支持任务说明和时间事件备注
-- 💾 自动保存，支持导入导出
-- 🖱️ 直观的时间轴缩放和拖拽
+## Features
 
-## 界面预览
+- 🕒 Real-time time tracking
+- 📊 Visual timeline display
+- 🎨 Automatic color coding for different time periods
+- 📝 Support for task descriptions and time event notes
+- 💾 Auto-save with import/export capabilities
+- 🖱️ Intuitive timeline zoom and drag
 
-### 主界面
-![主界面](./img/PixPin_2025-02-20_08-08-16.png)
+## Interface Preview
 
-### 时间事件编辑
-![时间事件编辑](./img/时间事件编辑.png)
+### Main Interface
+![Main Interface](./img/PixPin_2025-02-20_08-08-16.png)
 
-### 时间线
-![拖拽移动 滚轮缩放](./img/PixPin_2025-02-20_08-10-45.gif)
-![时间线事件详细](./img/PixPin_2025-02-20_08-03-00.gif)
+### Time Event Editing
+![Time Event Editing](./img/时间事件编辑.png)
 
-## 主要功能说明
+### Timeline
+![Drag and Zoom](./img/PixPin_2025-02-20_08-10-45.gif)
+![Timeline Event Details](./img/PixPin_2025-02-20_08-03-00.gif)
 
-### 任务管理
-- 创建、重命名、删除任务
-- 双击任务名称可直接编辑
-- 点击任务行可查看详细时间线
+## Key Features
 
-### 时间记录
-- 一键开始/结束计时
-- 对多个任务同时计时
-- 强制要求添加任务说明注释，确保工作记录必须要留痕 ✋😭✋ ✋😭✋ ✋😭✋ ✍🏻✍🏻✍🏻✍🏻✍🏻✍🏻
-- 实时显示计时状态
-- 自动为时间段分配颜色
-- 相同颜色累计时间统计
+### Task Management
+- Create, rename, and delete tasks
+- Double-click task name for direct editing
+- Click task row to view detailed timeline
 
-### 时间线视图
-- 直观展示时间分布
-- 鼠标滚轮缩放时间轴
-- 拖拽平移时间轴
-- 点击时间块编辑详情
+### Time Recording
+- One-click start/stop timing
+- Track multiple tasks simultaneously
+- Mandatory task description comments for work record tracking ✋😭✋ ✋😭✋ ✋😭✋ ✍🏻✍🏻✍🏻✍🏻✍🏻✍🏻
+- Real-time timing status display
+- Automatic color assignment for time periods
+- Cumulative time statistics by color
 
-### 数据管理
-- 本地自动保存（计时中途关闭浏览器也没问题！）
-- JSON格式导入导出
-- CSV格式导出单任务
-- 删除数据时很贴心地先自动导出
+### Timeline View
+- Intuitive time distribution display
+- Mouse wheel timeline zoom
+- Drag to pan timeline
+- Click time blocks to edit details
 
-## 技术栈
+### Data Management
+- Local auto-save (safe even if browser closes during timing!)
+- JSON format import/export
+- CSV export for individual tasks
+- Automatic export before data deletion
+
+## Tech Stack
 
 - Vue 3
 - Element Plus
 - TailwindCSS
 - Vite
 
-## 开始使用
+## Getting Started
 
 ```bash
 # 安装依赖
@@ -75,32 +77,32 @@ npm run build
 
 ```
 
-## 🚀 广告时间！ 专业研发服务 助力智能未来
+## 🚀 Professional Development Services
 
-### 🔍 核心业务领域
+### 🔍 Core Business Areas
 
-**💻 智能硬件开发专家**
-- 嵌入式系统全栈开发（低功耗4G物联网/工业Modbus网关/鸿蒙&LiteOS深度适配）
-- 工业级边缘计算解决方案（数据采集/协议转换/设备上云）
-- 智能终端定制开发（BLE/NFC/WiFi多模通信方案）
+**💻 Smart Hardware Development Expert**
+- Full-stack embedded systems development (Low-power 4G IoT/Industrial Modbus Gateway/HarmonyOS & LiteOS Integration)
+- Industrial edge computing solutions (Data collection/Protocol conversion/Cloud connectivity)
+- Smart terminal customization (BLE/NFC/WiFi multi-mode communication)
 
-**🌐 软件全场景开发**
-- 工业上位机开发（QT跨平台/Web）
-- Web全栈开发（Vue3/Spring Boot后端/小程序）
+**🌐 Full-spectrum Software Development**
+- Industrial HMI development (QT cross-platform/Web)
+- Web full-stack development (Vue3/Spring Boot backend/Mini Programs)
 
-**📑 专业文书服务**
-- 技术方案书撰写
-- 专利申报材料编制
+**📑 Professional Documentation Services**
+- Technical solution documentation
+- Patent application materials
 
-### 🏆 团队优势
-博士领衔研发团队 | 10+年行业经验 | 全流程项目管理
+### 🏆 Team Advantages
+PhD-led R&D team | 10+ years industry experience | End-to-end project management
 
-### ⚙️ 标准化服务流程
-1. **需求深挖** - 技术可行性分析报告 + 专人对接
-2. **方案定制** - 原型设计+功能清单确认+合同签约
-2. **交付保障** - 压力测试+源码移交+现场运维支持
+### ⚙️ Standardized Service Process
+1. **Requirement Analysis** - Technical feasibility report + Dedicated contact
+2. **Solution Design** - Prototype design + Feature list confirmation + Contract signing
+3. **Delivery Assurance** - Stress testing + Source code transfer + On-site maintenance support
 
-### 📬 开启智慧合作
-**技术顾问邮箱**：createskyblue@outlook.com  
-**邮件规范**：`[项目咨询] + 行业领域 + 预算范围`  
-**响应承诺**：7*24小时内响应 包括深夜
+### 📬 Contact Us
+**Technical Consultant Email**: createskyblue@outlook.com  
+**Email Format**: `[Project Inquiry] + Industry Domain + Budget Range`  
+**Response Promise**: 24/7 response including late hours
