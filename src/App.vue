@@ -267,10 +267,20 @@ ${block.description}`" @click="editEvent(block, date)">
 		<el-dialog v-model="editDialogVisible" title="编辑时间片" style="width: 70%;">
 			<el-form :model="editingEvent">
 				<el-form-item label="开始时间">
-					<el-time-picker v-model="editingEvent.start" format="HH:mm:ss" />
+					<el-date-picker
+						v-model="editingEvent.start"
+						type="datetime"
+						format="YYYY-MM-DD HH:mm:ss"
+						placeholder="选择开始日期时间"
+					/>
 				</el-form-item>
 				<el-form-item label="结束时间">
-					<el-time-picker v-model="editingEvent.end" format="HH:mm:ss" />
+					<el-date-picker
+						v-model="editingEvent.end"
+						type="datetime"
+						format="YYYY-MM-DD HH:mm:ss"
+						placeholder="选择结束日期时间"
+					/>
 				</el-form-item>
 				<el-form-item label="描述">
 					<el-input v-model="editingEvent.description" type="textarea" :rows="7" />
@@ -948,11 +958,12 @@ export default {
 				return;
 			}
 
+			const now = new Date();
 			// 初始化新记录数据
 			this.editingEventOriginal = null; // 清除原始记录引用，表示这是新增操作
 			this.editingEvent = {
-				start: new Date(),
-				end: new Date(new Date().getTime() + 60000), // 默认1分钟后
+				start: now,
+				end: new Date(now.getTime() + 60000), // 默认1分钟后
 				description: '',
 				color: this.getRandomColor()
 			};
