@@ -403,7 +403,7 @@ export default {
 			if (task) {
 				const timer = task.timers.find(t => t.end === null);
 				if (timer) {
-					const duration = (timer.end - timer.start) / 1000; // Duration in seconds
+					const duration = (new Date() - timer.start) / 1000; // Duration in seconds
 					if (duration < 10) {
 						ElMessage.warning('时间不足10秒，计时已丢弃');
 						task.timers = task.timers.filter(t => t !== timer); // Remove the timer
