@@ -244,6 +244,7 @@ export default {
 			scrollContainer: null,
 			taskDescriptions: {},
 			STORAGE_KEY: 'taskTimeTracker_data',
+			saveMshShowTimer: null,
 			isDragging: false,
 			lastClientX: 0,
 			scrollLeft: 0,
@@ -627,15 +628,25 @@ export default {
             });
         },
 
-        saveToStorage() {
-            this.splitCrossDayTimers(); // 拆分跨天时间记录
-            const data = {
-                tasks: this.tasks,
-                taskDescriptions: this.taskDescriptions,
-                developer: 'createskyblue'
-            };
-            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
-        },
+		saveToStorage() {
+			this.splitCrossDayTimers(); // 拆分跨天时间记录
+			const data = {
+				tasks: this.tasks,
+				taskDescriptions: this.taskDescriptions,
+				developer: 'createskyblue'
+			};
+			localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
+
+			// Clear the previous timeout if it exists
+			if (this.saveMshShowTimer) {
+				clearTimeout(this.saveMshShowTimer);
+			}
+			// Set a new timeout to show the save message after 3 seconds of inactivity
+			this.saveMshShowTimer = setTimeout(() => {
+				ElMessage.success('保存成功');
+			}, 3000);
+		},
+		
 
         loadFromStorage() {
             const data = localStorage.getItem(this.STORAGE_KEY);
