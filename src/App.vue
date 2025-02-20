@@ -211,6 +211,9 @@
 						反馈邮箱: createskyblue@outlook.com
 					</a>
 				</p>
+				<p class="mt-1">
+					您的数据存储在本地浏览器缓存中，除非您清除浏览器缓存，否则数据不会丢失。
+				</p>
 			</div>
 		</el-main>
 	</el-container>
@@ -677,7 +680,7 @@ export default {
 		};
 		const dataStr = JSON.stringify(data, null, 2);
 		const timestamp = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
-		this.downloadFile(dataStr, `task_${task.name}_${timestamp}.json`, 'application/json');
+		this.downloadFile(dataStr, `时探客_TaskTimeTracker_Task_${task.name}_${timestamp}.json`, 'application/json');
 		},
 		handleGlobalExport(format) {
 		if (format === 'json') {
@@ -688,7 +691,7 @@ export default {
 			};
 			const dataStr = JSON.stringify(data, null, 2);
 			const timestamp = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
-			this.downloadFile(dataStr, `all_tasks_${timestamp}.json`, 'application/json');
+			this.downloadFile(dataStr, `时探客_TaskTimeTracker_AllTasks_${timestamp}.json`, 'application/json');
 		}
 		},
 		downloadFile(content, filename, type) {
