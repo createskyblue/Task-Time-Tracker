@@ -57,7 +57,7 @@
 					<span class="bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500">
 						时探客 Task Time Tracker
 					</span>
-					<div class="text-sm text-gray-500 mt-1">版本：250220X</div>
+					<div class="text-sm text-gray-500 mt-1">版本：250220Y</div>
 				</div>
 
 				<!-- 当前选中的项目详情 -->
