@@ -92,8 +92,8 @@
 			<div class="flex justify-between items-center">
 			  <span class="font-medium">时间统计</span>
 			  <div class="space-x-2">
-				<el-button size="small" @click="addNewEvent">新增记录</el-button>
-				<el-button size="small" type="primary" @click="handleExport(selectedTask)">导出</el-button>
+				<el-button size="small"  type="primary" @click="addNewEvent">新增记录</el-button>
+				<el-button size="small" type="success" @click="handleExport(selectedTask)">导出</el-button>
 			  </div>
 			</div>
 		  </div>
@@ -129,7 +129,7 @@
             <!-- 增加一行小字提示：小提示：滚轮缩放时间轴，拖拽滚动时间轴 -->
             <div class="mb-4">
 
-              <el-button type="success" @click="addNewEvent">新增记录</el-button>
+              <el-button  type="primary" @click="addNewEvent">新增记录</el-button>
               <el-button @click.stop="handleExport(selectedTask)" type="success">导出</el-button>
               <el-button @click="deleteTask(selectedTask)" type="danger">删除</el-button>
             </div>
@@ -213,7 +213,7 @@ ${block.description}`"
               :on-change="handleFileChange">
               <el-button type="primary">导入任务</el-button>
             </el-upload>
-            <el-button type="success" @click="handleGlobalExport('json')">导出所有数据</el-button>
+            <el-button type="success" @click="handleGlobalExport('json')" class="ms-3">导出所有数据</el-button>
             <el-button type="danger" @click="clearAllTasks">清除所有数据</el-button>
           </div>
         </div>
