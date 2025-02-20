@@ -6,6 +6,8 @@
 					<span class="bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500">
 						时探客 Task Time Tracker
 					</span>
+					<!-- 一行小字显示版本 -->
+					<div class="text-sm text-gray-500 mt-1">版本：250220X</div>
 				</div>
 				<div>
 					<!-- Task List -->
