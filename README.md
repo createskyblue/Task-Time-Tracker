@@ -22,9 +22,6 @@ A simple and user-friendly personal project time tracking tool to help you recor
 ### Main Interface
 ![Main Interface](./img/PixPin_2025-02-20_08-08-16.png)
 
-### Time Event Editing
-![Time Event Editing](./img/时间事件编辑.png)
-
 ### Timeline
 ![Drag and Zoom](./img/PixPin_2025-02-20_08-10-45.gif)
 ## Key Features
