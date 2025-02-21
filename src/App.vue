@@ -372,11 +372,16 @@ export default {
 		this.$nextTick(() => {
 			this.scrollContainer = this.$refs.scrollContainer;
 		});
+
+		// 添加全局快捷键监听
+		window.addEventListener('keydown', this.handleKeydown);
 	},
 	beforeUnmount() {
 		if (this.timerInterval) {
 			clearInterval(this.timerInterval);
 		}
+		// 移除全局快捷键监听
+		window.removeEventListener('keydown', this.handleKeydown);
 	},
 	watch: {
 		tasks: {
@@ -1162,6 +1167,14 @@ export default {
 				this.saveToStorage();
 			}
 			task.isEditing = false;
+		},
+		handleKeydown(event) {
+			// 检测 Ctrl+S 或 Command+S (Mac)
+			if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+				event.preventDefault(); // 阻止默认的保存行为
+				this.handleGlobalExport('json');
+				ElMessage.success('已保存所有数据');
+			}
 		},
 	}
 }
