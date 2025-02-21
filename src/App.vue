@@ -186,13 +186,66 @@ ${block.description}`" @click="editEvent(block, date)">
 					</div>
 					<!-- Content -->
 					<div class="p-4">
-						<div class="grid grid-cols-3 gap-4">
-							<div>今日：{{ calculatePeriodDuration(selectedTask.timers, 'day') }}</div>
-							<div>本周：{{ calculatePeriodDuration(selectedTask.timers, 'week') }}</div>
-							<div>本月：{{ calculatePeriodDuration(selectedTask.timers, 'month') }}</div>
-							<div>半年：{{ calculatePeriodDuration(selectedTask.timers, 'halfYear') }}</div>
-							<div>今年：{{ calculatePeriodDuration(selectedTask.timers, 'year') }}</div>
-							<div>总计：{{ calculateTotalDuration(selectedTask.timers) }}</div>
+						<div class="grid grid-cols-2 gap-4">
+							<div class="stats-item">
+								<div class="text-gray-600">今日 / 昨日</div>
+								<div class="flex items-baseline">
+									<span class="text-lg">{{ calculatePeriodDuration(selectedTask.timers, 'day') }}</span>
+									<span class="text-sm text-gray-500 mx-2">/</span>
+									<span class="text-sm text-gray-600">{{ getPreviousPeriodDuration('day') }}</span>
+									<span class="ml-2 text-sm" :class="getComparisonClass('day')">
+										{{ getComparison('day') }}
+									</span>
+								</div>
+							</div>
+							<div class="stats-item">
+								<div class="text-gray-600">本周 / 上周</div>
+								<div class="flex items-baseline">
+									<span class="text-lg">{{ calculatePeriodDuration(selectedTask.timers, 'week') }}</span>
+									<span class="text-sm text-gray-500 mx-2">/</span>
+									<span class="text-sm text-gray-600">{{ getPreviousPeriodDuration('week') }}</span>
+									<span class="ml-2 text-sm" :class="getComparisonClass('week')">
+										{{ getComparison('week') }}
+									</span>
+								</div>
+							</div>
+							<div class="stats-item">
+								<div class="text-gray-600">本月 / 上月</div>
+								<div class="flex items-baseline">
+									<span class="text-lg">{{ calculatePeriodDuration(selectedTask.timers, 'month') }}</span>
+									<span class="text-sm text-gray-500 mx-2">/</span>
+									<span class="text-sm text-gray-600">{{ getPreviousPeriodDuration('month') }}</span>
+									<span class="ml-2 text-sm" :class="getComparisonClass('month')">
+										{{ getComparison('month') }}
+									</span>
+								</div>
+							</div>
+							<div class="stats-item">
+								<div class="text-gray-600">半年 / 上半年</div>
+								<div class="flex items-baseline">
+									<span class="text-lg">{{ calculatePeriodDuration(selectedTask.timers, 'halfYear') }}</span>
+									<span class="text-sm text-gray-500 mx-2">/</span>
+									<span class="text-sm text-gray-600">{{ getPreviousPeriodDuration('halfYear') }}</span>
+									<span class="ml-2 text-sm" :class="getComparisonClass('halfYear')">
+										{{ getComparison('halfYear') }}
+									</span>
+								</div>
+							</div>
+							<div class="stats-item">
+								<div class="text-gray-600">今年 / 去年</div>
+								<div class="flex items-baseline">
+									<span class="text-lg">{{ calculatePeriodDuration(selectedTask.timers, 'year') }}</span>
+									<span class="text-sm text-gray-500 mx-2">/</span>
+									<span class="text-sm text-gray-600">{{ getPreviousPeriodDuration('year') }}</span>
+									<span class="ml-2 text-sm" :class="getComparisonClass('year')">
+										{{ getComparison('year') }}
+									</span>
+								</div>
+							</div>
+							<div class="stats-item">
+								<div class="text-gray-600">总计</div>
+								<div class="text-lg">{{ calculateTotalDuration(selectedTask.timers) }}</div>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -1183,7 +1236,140 @@ export default {
 				];
 				this.saveToStorage();
 			}
-		}
+		},
+		calculatePeriodSeconds(timers, startTime, endTime) {
+			if (!timers?.length) return 0;
+			return timers.reduce((acc, timer) => {
+				const start = new Date(timer.start);
+				const end = timer.end ? new Date(timer.end) : new Date();
+				
+				if (end < startTime || start > endTime) return acc;
+				
+				const effectiveStart = start < startTime ? startTime : start;
+				const effectiveEnd = end > endTime ? endTime : end;
+				
+				return acc + (effectiveEnd - effectiveStart) / 1000;
+			}, 0);
+		},
+
+		getComparison(period) {
+			if (!this.selectedTask?.timers?.length) return '';
+			
+			const now = new Date();
+			let currentStart, currentEnd, previousStart, previousEnd;
+			
+			switch(period) {
+				case 'day':
+					currentStart = new Date(now.setHours(0, 0, 0, 0));
+					currentEnd = new Date();
+					previousStart = new Date(currentStart);
+					previousStart.setDate(previousStart.getDate() - 1);
+					previousEnd = new Date(currentStart);
+					break;
+				case 'week':
+					currentStart = new Date(now.setDate(now.getDate() - now.getDay()));
+					currentEnd = new Date();
+					previousStart = new Date(currentStart);
+					previousStart.setDate(previousStart.getDate() - 7);
+					previousEnd = new Date(currentStart);
+					break;
+				case 'month':
+					currentStart = new Date(now.setDate(1));
+					currentEnd = new Date();
+					previousStart = new Date(currentStart);
+					previousStart.setMonth(previousStart.getMonth() - 1);
+					previousEnd = new Date(currentStart);
+					break;
+				case 'halfYear':
+					currentStart = new Date(now.setMonth(now.getMonth() - 6));
+					currentEnd = new Date();
+					previousStart = new Date(currentStart);
+					previousStart.setMonth(previousStart.getMonth() - 6);
+					previousEnd = new Date(currentStart);
+					break;
+				case 'year':
+					currentStart = new Date(now.setMonth(0, 1));
+					currentEnd = new Date();
+					previousStart = new Date(currentStart);
+					previousStart.setFullYear(previousStart.getFullYear() - 1);
+					previousEnd = new Date(currentStart);
+					break;
+			}
+			
+			const currentSeconds = this.calculatePeriodSeconds(this.selectedTask.timers, currentStart, currentEnd);
+			const previousSeconds = this.calculatePeriodSeconds(this.selectedTask.timers, previousStart, previousEnd);
+			
+			if (previousSeconds === 0) return '';
+			
+			const percentage = ((currentSeconds - previousSeconds) / previousSeconds * 100).toFixed(1);
+			return percentage > 0 ? `+${percentage}%` : `${percentage}%`;
+		},
+
+		getComparisonClass(period) {
+			const comparison = this.getComparison(period);
+			if (!comparison) return '';
+			return comparison.startsWith('+') ? 'text-green-500' : 'text-red-500';
+		},
+		getPreviousPeriodDuration(period) {
+			if (!this.selectedTask?.timers?.length) return '0小时0分钟';
+			
+			const now = new Date();
+			let startTime, endTime;
+			
+			switch(period) {
+				case 'day':
+					startTime = new Date(now);
+					startTime.setDate(startTime.getDate() - 1);
+					startTime.setHours(0, 0, 0, 0);
+					endTime = new Date(startTime);
+					endTime.setHours(23, 59, 59, 999);
+					break;
+				case 'week':
+					startTime = new Date(now);
+					startTime.setDate(startTime.getDate() - startTime.getDay() - 7);
+					startTime.setHours(0, 0, 0, 0);
+					endTime = new Date(startTime);
+					endTime.setDate(endTime.getDate() + 6);
+					endTime.setHours(23, 59, 59, 999);
+					break;
+				case 'month':
+					startTime = new Date(now);
+					startTime.setMonth(startTime.getMonth() - 1);
+					startTime.setDate(1);
+					startTime.setHours(0, 0, 0, 0);
+					endTime = new Date(startTime.getFullYear(), startTime.getMonth() + 1, 0, 23, 59, 59, 999);
+					break;
+				case 'halfYear':
+					startTime = new Date(now);
+					startTime.setMonth(startTime.getMonth() - 12);
+					startTime.setHours(0, 0, 0, 0);
+					endTime = new Date(startTime);
+					endTime.setMonth(endTime.getMonth() + 6);
+					endTime.setHours(23, 59, 59, 999);
+					break;
+				case 'year':
+					startTime = new Date(now);
+					startTime.setFullYear(startTime.getFullYear() - 1);
+					startTime.setMonth(0, 1);
+					startTime.setHours(0, 0, 0, 0);
+					endTime = new Date(startTime);
+					endTime.setMonth(11, 31);
+					endTime.setHours(23, 59, 59, 999);
+					break;
+			}
+
+			const totalSeconds = this.calculatePeriodSeconds(this.selectedTask.timers, startTime, endTime);
+			const hours = Math.floor(totalSeconds / 3600);
+			const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+			const recordCount = this.selectedTask.timers.filter(timer => {
+				const start = new Date(timer.start);
+				const end = timer.end ? new Date(timer.end) : now;
+				return !(end < startTime || start > endTime);
+			}).length;
+
+			return `${hours}小时${minutes}分钟 (${recordCount})`;
+		},
 	}
 }
 </script>
@@ -1289,5 +1475,12 @@ export default {
 .prevent-select {
   user-select: none;
   -webkit-user-select: none;
+}
+
+.stats-item {
+    padding: 1rem;
+    background-color: #f8fafc;
+    border-radius: 0.5rem;
+    border: 1px solid #e2e8f0;
 }
 </style>
