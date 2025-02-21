@@ -39,9 +39,11 @@
 									@click.stop="startTimer(task.id)">
 									<el-icon><video-play /></el-icon>
 								</el-button>
-								<el-button v-else type="success" size="small" circle @click.stop="stopTimer(task.id)">
-									<el-icon><video-pause /></el-icon>
-								</el-button>
+									<template v-else>
+										<el-button type="success" size="small" circle @click.stop="stopTimer(task.id)">
+											<el-icon><video-pause /></el-icon>
+										</el-button>
+									</template>
 							</div>
 						</div>
 					</div>
@@ -70,6 +72,8 @@
 							</el-tag>
 						</h2>
 					<div>
+						
+						<span class=" text-blue-600 mr-2">{{ getRunningTime(selectedTask.id) }}</span>
 						  <el-button 
 							type="primary" 
 							@click="startTimer(selectedTask.id)"
@@ -94,7 +98,7 @@
 				</div>
 
 				<!-- 时间线 -->
-				<div class=" p-5 border border-gray-200 rounded-lg shadow-sm">
+				<div class=" p-5 border border-gray-200 rounded-lg shadow-sm overflow-y-auto">
 					<div v-if="!selectedTask">
 						<h3 class="text-lg font-medium mb-4">时间线</h3>
 						<div class="text-sm text-gray-500 mt-4">
@@ -343,6 +347,8 @@ export default {
 			taskNameTooltipText: '双击可编辑项目名称',
 			showAddTaskDialog: false,
 			editingTask: null,
+			lastClientY: 0,       // 添加Y轴位置记录
+			scrollTop: 0,         // 添加垂直滚动位置
 		}
 	},
 	directives: {
@@ -666,14 +672,26 @@ export default {
 		startDrag(e) {
 			this.isDragging = true;
 			this.lastClientX = e.clientX;
+			this.lastClientY = e.clientY;                    // 记录Y轴位置
 			this.scrollLeft = this.$refs.scrollContainer?.scrollLeft || 0;
+			this.scrollTop = window.scrollY;                 // 记录页面垂直滚动位置
 		},
+		
 		onDrag(e) {
-			if (!this.isDragging || !this.$refs.scrollContainer) return;
+			if (!this.isDragging) return;
 			e.preventDefault();
-			const dx = e.clientX - this.lastClientX;
-			this.$refs.scrollContainer.scrollLeft = this.scrollLeft - dx;
+			
+			// 水平滚动（时间轴）
+			const dX = e.clientX - this.lastClientX;
+			if (this.$refs.scrollContainer) {
+			  this.$refs.scrollContainer.scrollLeft = this.scrollLeft - dX;
+			}
+			
+			// 垂直滚动（整个页面）
+			const dY = e.clientY - this.lastClientY;
+			window.scrollTo(0, this.scrollTop - dY);
 		},
+		
 		stopDrag() {
 			this.isDragging = false;
 		},
@@ -738,10 +756,10 @@ export default {
 			if (this.saveMshShowTimer) {
 				clearTimeout(this.saveMshShowTimer);
 			}
-			// Set a new timeout to show the save message after 3 seconds of inactivity
+			// Set a new timeout to show the save message after 1 second of inactivity
 			this.saveMshShowTimer = setTimeout(() => {
 				ElMessage.success('保存成功');
-			}, 3000);
+			}, 1500);
 		},
 
 
@@ -1236,5 +1254,19 @@ export default {
 
 .el-input.el-input--small {
 	margin: -2px 0;
+}
+
+/* 添加全局拖动鼠标样式 */
+.cursor-grab {
+  cursor: grab;
+}
+.cursor-grabbing {
+  cursor: grabbing;
+}
+
+/* 防止文本选择 */
+.prevent-select {
+  user-select: none;
+  -webkit-user-select: none;
 }
 </style>
