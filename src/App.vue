@@ -15,35 +15,28 @@
 			<div class="project-list-container">
 				<div class="project-list px-3">
 					<div v-for="task in tasks" :key="task.id"
-						class="p-3 mb-2 rounded-lg cursor-pointer transition-colors hover:bg-gray-100"
-						:class="{ 'bg-gray-100': selectedTask?.id === task.id }" @click="selectTask(task.id)">
+						class="p-3 mb-2 rounded-lg cursor-pointer transition-colors hover:bg-slate-200"
+						:class="{ 'bg-slate-100': selectedTask?.id === task.id }" @click="selectTask(task.id)">
 						<div class="flex items-center justify-between">
 							<div class="flex-1">
 								<div class="font-medium" @dblclick.stop="startEditing(task)" v-if="!task.isEditing">
 									{{ task.name }}
 								</div>
-								<el-input
-									v-else
-									v-model="task.editingName"
-									size="small"
-									@blur="finishEditing(task)"
-									@keyup.enter="finishEditing(task)"
-									v-focus
-								/>
+								<el-input v-else v-model="task.editingName" size="small" @blur="finishEditing(task)"
+									@keyup.enter="finishEditing(task)" v-focus />
 								<div class="text-xs text-gray-500">
 									{{ calculateTotalDuration(task.timers) }}
 								</div>
 							</div>
 							<div class="flex items-center space-x-2">
-								<el-button v-if="!isTaskRunning(task.id)" size="small" circle style="background-color: #DEDFE0;"
+								<div v-if="!isTaskRunning(task.id)" class="w-4 h-4 rounded-full bg-slate-400 flex items-center justify-center cursor-pointer ring-2 ring-white"
 									@click.stop="startTimer(task.id)">
-									<el-icon><video-play /></el-icon>
-								</el-button>
-									<template v-else>
-										<el-button type="success" size="small" circle @click.stop="stopTimer(task.id)">
-											<el-icon><video-pause /></el-icon>
-										</el-button>
-									</template>
+									<el-icon class="text-white"><video-pause /></el-icon>
+								  </div>
+								  <div v-else class="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center cursor-pointer ring-2 ring-white"
+									@click.stop="stopTimer(task.id)">
+									<el-icon class="text-white"><video-pause /></el-icon>
+								  </div>
 							</div>
 						</div>
 					</div>
@@ -71,21 +64,17 @@
 								{{ isTaskRunning(selectedTask.id) ? '进行中' : '未开始' }}
 							</el-tag>
 						</h2>
-					<div>
-						
-						<span class=" text-blue-600 mr-2">{{ getRunningTime(selectedTask.id) }}</span>
-						  <el-button 
-							type="primary" 
-							@click="startTimer(selectedTask.id)"
-							v-show="!isTaskRunning(selectedTask.id)">
-							让我们开始
-						  </el-button>
-						  <el-button 
-							type="danger" 
-							@click="stopTimer(selectedTask.id)"
-							v-show="isTaskRunning(selectedTask.id)">
-							暂停记录
-						  </el-button>
+						<div>
+
+							<span class=" text-blue-600 mr-2">{{ getRunningTime(selectedTask.id) }}</span>
+							<el-button type="primary" @click="startTimer(selectedTask.id)"
+								v-show="!isTaskRunning(selectedTask.id)">
+								让我们开始
+							</el-button>
+							<el-button type="danger" @click="stopTimer(selectedTask.id)"
+								v-show="isTaskRunning(selectedTask.id)">
+								暂停记录
+							</el-button>
 						</div>
 					</div>
 
@@ -132,8 +121,7 @@
 									<div class="time-blocks-container">
 										<div v-for="(blocks, date) in formattedTimeBlocks" :key="date"
 											class="flex h-10 my-2.5 items-center border-b border-gray-300">
-											<div
-												class="sticky left-0 py-1 w-24 ps-2 text-sm text-gray-700 rounded-md -mt-2"
+											<div class="sticky left-0 py-1 w-24 ps-2 text-sm text-gray-700 rounded-md -mt-2"
 												style="width:96px">
 												<div class="font-medium">{{ date }}</div>
 												<div class="text-xs text-gray-500">{{ calculateDayTotal(blocks) }}</div>
@@ -271,20 +259,12 @@ ${block.description}`" @click="editEvent(block, date)">
 		<el-dialog v-model="editDialogVisible" title="编辑时间片" style="width: 70%;">
 			<el-form :model="editingEvent">
 				<el-form-item label="开始时间">
-					<el-date-picker
-						v-model="editingEvent.start"
-						type="datetime"
-						format="YYYY-MM-DD HH:mm:ss"
-						placeholder="选择开始日期时间"
-					/>
+					<el-date-picker v-model="editingEvent.start" type="datetime" format="YYYY-MM-DD HH:mm:ss"
+						placeholder="选择开始日期时间" />
 				</el-form-item>
 				<el-form-item label="结束时间">
-					<el-date-picker
-						v-model="editingEvent.end"
-						type="datetime"
-						format="YYYY-MM-DD HH:mm:ss"
-						placeholder="选择结束日期时间"
-					/>
+					<el-date-picker v-model="editingEvent.end" type="datetime" format="YYYY-MM-DD HH:mm:ss"
+						placeholder="选择结束日期时间" />
 				</el-form-item>
 				<el-form-item label="描述">
 					<el-input v-model="editingEvent.description" type="textarea" :rows="7" />
@@ -443,13 +423,22 @@ export default {
 				const newTask = {
 					id: Date.now(),
 					name: this.newTaskName,
-					timers: []
+					timers: [],
+					lastModified: Date.now() // Add lastModified timestamp
 				};
-				this.tasks.push(newTask);
+				this.tasks.unshift(newTask); // Add to beginning of array
 				this.newTaskName = '';
 				this.showAddTaskDialog = false;
 				this.selectTask(newTask.id);
 				this.saveToStorage();
+			}
+		},
+		updateTaskModificationTime(taskId) {
+			const task = this.tasks.find(t => t.id === taskId);
+			if (task) {
+				task.lastModified = Date.now();
+				// Re-sort tasks array
+				this.tasks.sort((a, b) => (b.lastModified || 0) - (a.lastModified || 0));
 			}
 		},
 		isTaskRunning(taskId) {
@@ -503,6 +492,7 @@ export default {
 					description: this.taskDescriptions[taskId] || '', // 使用现有描述或空字符串
 					color: this.getRandomColor() // 直接分配颜色
 				});
+				this.updateTaskModificationTime(taskId);
 				this.saveToStorage(); // 保存到本地存储以保持计时信息
 			}
 		},
@@ -525,6 +515,7 @@ export default {
 						timer.end = new Date();
 						timer.description = description;
 						ElMessage.success('计时已结束');
+						this.updateTaskModificationTime(taskId);
 						this.saveToStorage(); // 保存到本地存储以保持颜色信息
 						// Only auto-export if enabled
 						if (this.autoExport) {
@@ -611,7 +602,13 @@ export default {
 		selectTask(taskId) {
 			const task = this.tasks.find(t => t.id === taskId);
 			if (task) {
+				// 将选中的任务移动到数组最前面
+				this.tasks = [
+					task,
+					...this.tasks.filter(t => t.id !== taskId)
+				];
 				this.showTaskGantt(task);
+				this.saveToStorage();
 			}
 		},
 		handleScroll(e) {
@@ -861,8 +858,11 @@ export default {
 						const rawData = JSON.parse(e.target.result);
 						const processedData = this.processImportedData(rawData);
 
-						// 检查任务ID是否重复
+						// Add lastModified to imported tasks if not present
 						processedData.forEach(task => {
+							if (!task.lastModified) {
+								task.lastModified = Date.now();
+							}
 							const exists = this.tasks.some(t => t.id === task.id);
 							if (exists) {
 								task.id = Date.now() + Math.floor(Math.random() * 1000);
@@ -870,6 +870,8 @@ export default {
 						});
 
 						this.tasks = [...this.tasks, ...processedData];
+						// Sort tasks by lastModified
+						this.tasks.sort((a, b) => (b.lastModified || 0) - (a.lastModified || 0));
 						this.saveToStorage();
 						ElMessage.success(`成功导入 ${processedData.length} 个任务`);
 					} else if (file.raw.name.endsWith('.csv')) {
@@ -961,7 +963,7 @@ export default {
 			}
 
 			if (this.editingEventOriginal) {
-				// 编辑模式：更新现有记录
+				// 编辑���式：更新现有记录
 				Object.assign(this.editingEventOriginal, newEvent);
 			} else {
 				// 新增模式：添加新记录
@@ -1032,6 +1034,7 @@ export default {
 		finishEdit(row) {
 			if (row.editingName && row.editingName.trim()) {
 				row.name = row.editingName.trim();
+				this.updateTaskModificationTime(row.id);
 				this.saveToStorage();
 			}
 			row.isEditing = false;
@@ -1164,6 +1167,7 @@ export default {
 		finishEditing(task) {
 			if (task.editingName && task.editingName.trim()) {
 				task.name = task.editingName.trim();
+				this.updateTaskModificationTime(task.id);
 				this.saveToStorage();
 			}
 			task.isEditing = false;
@@ -1201,7 +1205,7 @@ export default {
 
 /* 任务说明输入框样式 */
 .task-description-input .el-textarea__inner {
-	min-height: 60px !important;
+	min-height: 60px !重要;
 	font-size: 12px;
 	line-height: 1.4;
 	padding: 4px 8px;
