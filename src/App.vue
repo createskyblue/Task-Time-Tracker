@@ -562,11 +562,7 @@ export default {
 				const start = new Date(timer.start);
 				const end = timer.end ? new Date(timer.end) : new Date();
 				const duration = (end - start) / 1000; // Duration in seconds
-
-				// 根据持续时间决定显示内容
-				const displayText = duration < 60 ? // 小于1分钟
-					`${Math.floor(duration)}秒` :
-					timer.description || '未命名时间段';
+				const displayText = timer.description || '未命名时间段';
 
 				acc[date].push({
 					id: Date.now() + Math.random(),
