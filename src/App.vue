@@ -52,7 +52,7 @@
 					<span class="bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500">
 						时探客 Task Time Tracker
 					</span>
-					<div class="text-sm text-gray-500 mt-1">版本：250220Y</div>
+					<div class="text-sm text-gray-500 mt-1">版本：250221A</div>
 				</div>
 
 				<!-- 当前选中的项目详情 -->
@@ -1045,7 +1045,7 @@ export default {
 		deleteEvent() {
 			if (!this.editingEventOriginal || !this.selectedTask) return;
 
-			this.$confirm('���操作将永久删除该记录, 是否继续?', '提示', {
+			this.$confirm('此操作将永久删除该记录, 是否继续?', '提示', {
 				confirmButtonText: '确定',
 				cancelButtonText: '取消',
 				type: 'warning'

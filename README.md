@@ -27,8 +27,6 @@ A simple and user-friendly personal project time tracking tool to help you recor
 
 ### Timeline
 ![Drag and Zoom](./img/PixPin_2025-02-20_08-10-45.gif)
-![Timeline Event Details](./img/PixPin_2025-02-20_08-03-00.gif)
-
 ## Key Features
 
 ### Task Management
