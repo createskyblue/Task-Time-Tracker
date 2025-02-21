@@ -52,7 +52,7 @@
 					<span class="bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500">
 						时探客 Task Time Tracker
 					</span>
-					<div class="text-sm text-gray-500 mt-1">版本：250221A</div>
+					<div class="text-sm text-gray-500 mt-1">版本：250221B</div>
 				</div>
 
 				<!-- 当前选中的项目详情 -->
@@ -1223,8 +1223,13 @@ export default {
 			// 检测 Ctrl+S 或 Command+S (Mac)
 			if ((event.ctrlKey || event.metaKey) && event.key === 's') {
 				event.preventDefault(); // 阻止默认的保存行为
-				this.handleGlobalExport('json');
-				ElMessage.success('已保存所有数据');
+				ElMessage.info('保存操作中...');
+				this.saveToStorage();
+
+				if (this.autoExport) {
+					this.handleGlobalExport('json');
+					ElMessage.success('已导出所有数据');
+				}
 			}
 		},
 		handleProjectListLeave() {
