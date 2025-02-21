@@ -13,7 +13,7 @@
 			</div>
 			<!-- 项目列表容器 -->
 			<div class="project-list-container">
-				<div class="project-list px-3">
+				<div class="project-list px-3" @mouseleave="handleProjectListLeave">
 					<div v-for="task in tasks" :key="task.id"
 						class="p-3 mb-2 rounded-lg cursor-pointer transition-colors hover:bg-slate-200"
 						:class="{ 'bg-slate-100': selectedTask?.id === task.id }" @click="selectTask(task.id)">
@@ -596,21 +596,19 @@ export default {
 			console.log('Selected task:', task);
 		},
 		showTaskGantt(task) {
+			// 不再在这里调用排序逻辑
 			this.selectedTask = task;
 			this.formattedTimeBlocks = this.formatTimeBlocks(task);
 		},
+
 		selectTask(taskId) {
 			const task = this.tasks.find(t => t.id === taskId);
 			if (task) {
-				// 将选中的任务移动到数组最前面
-				this.tasks = [
-					task,
-					...this.tasks.filter(t => t.id !== taskId)
-				];
+				// 只显示任务详情，不进行排序
 				this.showTaskGantt(task);
-				this.saveToStorage();
 			}
 		},
+
 		handleScroll(e) {
 			const container = this.$refs.scrollContainer;
 			if (container) {
@@ -963,7 +961,7 @@ export default {
 			}
 
 			if (this.editingEventOriginal) {
-				// 编辑���式：更新现有记录
+				// 编辑模式：更新现有记录
 				Object.assign(this.editingEventOriginal, newEvent);
 			} else {
 				// 新增模式：添加新记录
@@ -998,7 +996,7 @@ export default {
 		deleteEvent() {
 			if (!this.editingEventOriginal || !this.selectedTask) return;
 
-			this.$confirm('此操作将永久删除该记录, 是否继续?', '提示', {
+			this.$confirm('���操作将永久删除该记录, 是否继续?', '提示', {
 				confirmButtonText: '确定',
 				cancelButtonText: '取消',
 				type: 'warning'
@@ -1014,7 +1012,7 @@ export default {
 			});
 		},
 		handleRowClick(row, column) {
-			// 如果点击的是操作列或正在编辑的输入框���不进行跳转
+			// 如果点击的是操作列或正在编辑的输入框，则不进行跳转
 			this.selectTask(row.id);
 		},
 
@@ -1180,6 +1178,16 @@ export default {
 				ElMessage.success('已保存所有数据');
 			}
 		},
+		handleProjectListLeave() {
+			if (this.selectedTask) {
+				// 只在鼠标离开侧边栏时进行排序
+				this.tasks = [
+					this.selectedTask,
+					...this.tasks.filter(t => t.id !== this.selectedTask.id)
+				];
+				this.saveToStorage();
+			}
+		}
 	}
 }
 </script>
