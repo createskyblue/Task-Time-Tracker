@@ -35,7 +35,7 @@
 								</div>
 							</div>
 							<div class="flex items-center space-x-2">
-								<el-button v-if="!isTaskRunning(task.id)" type="danger" size="small" circle
+								<el-button v-if="!isTaskRunning(task.id)" size="small" circle style="background-color: #DEDFE0;"
 									@click.stop="startTimer(task.id)">
 									<el-icon><video-play /></el-icon>
 								</el-button>
