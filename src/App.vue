@@ -52,7 +52,7 @@
 					<span class="bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500">
 						时探客 Task Time Tracker
 					</span>
-					<img class="mx-auto block pt-2" src="https://img.shields.io/badge/version-250301A-blue">
+					<img class="mx-auto block pt-2" src="https://img.shields.io/badge/version-250301B-blue">
 				</div>
 
 				<!-- 当前选中的项目详情 -->
@@ -1764,6 +1764,108 @@ export default {
 .markdown-preview h4 { font-size: 1em; }
 .markdown-preview h5 { font-size: .875em; }
 .markdown-preview h6 { font-size: .85em; color: #6a737d; }
+/* 列表支持需要有开头原点装饰 */
+.markdown-preview ul { 
+	list-style-type: disc; 
+	padding-left: 1.5em; 
+}
+/* Basic elements */
+.markdown-preview p {
+  margin-bottom: 1em;
+}
+
+/* Ordered lists */
+.markdown-preview ol {
+  list-style-type: decimal;
+  padding-left: 1.5em;
+  margin-bottom: 1em;
+}
+
+/* Nested lists */
+.markdown-preview ul ul, .markdown-preview ol ul {
+  list-style-type: circle;
+}
+.markdown-preview ul ul ul, .markdown-preview ol ul ul {
+  list-style-type: square;
+}
+
+/* Code blocks and inline code */
+.markdown-preview code {
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+  background-color: rgba(27, 31, 35, 0.05);
+  border-radius: 3px;
+  padding: 0.2em 0.4em;
+  font-size: 85%;
+}
+.markdown-preview pre {
+  background-color: #f6f8fa;
+  border-radius: 3px;
+  padding: 16px;
+  overflow: auto;
+  margin-bottom: 1em;
+}
+.markdown-preview pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+/* Blockquotes */
+.markdown-preview blockquote {
+  border-left: 4px solid #dfe2e5;
+  padding-left: 1em;
+  color: #6a737d;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* Links */
+.markdown-preview a {
+  color: #0366d6;
+  text-decoration: none;
+}
+.markdown-preview a:hover {
+  text-decoration: underline;
+}
+
+/* Tables */
+.markdown-preview table {
+  border-collapse: collapse;
+  margin-bottom: 1em;
+  width: 100%;
+  overflow: auto;
+}
+.markdown-preview table th, .markdown-preview table td {
+  border: 1px solid #dfe2e5;
+  padding: 6px 13px;
+}
+.markdown-preview table th {
+  background-color: #f6f8fa;
+  font-weight: 600;
+}
+.markdown-preview table tr:nth-child(2n) {
+  background-color: #f6f8fa;
+}
+
+/* Images */
+.markdown-preview img {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Horizontal rule */
+.markdown-preview hr {
+  height: 0.25em;
+  padding: 0;
+  margin: 24px 0;
+  background-color: #e1e4e8;
+  border: 0;
+}
+
+/* Task list */
+.markdown-preview input[type="checkbox"] {
+  margin-right: 0.5em;
+}
+
 
 /* 添加新的固定侧边栏样式 */
 .fixed-aside {
