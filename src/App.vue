@@ -52,7 +52,7 @@
 					<span class="bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500">
 						时探客 Task Time Tracker
 					</span>
-					<img class="mx-auto block pt-2" src="https://img.shields.io/badge/version-250301B-blue">
+					<img class="mx-auto block pt-2" src="https://img.shields.io/badge/version-250301C-blue">
 				</div>
 
 				<!-- 当前选中的项目详情 -->
@@ -269,10 +269,15 @@
 				<!-- 时间线 -->
 				<div ref="timelineRef" class=" p-5 border border-gray-200 rounded-lg shadow-sm overflow-y-auto">
 					<div v-if="!selectedTask">
-						<h3 class="text-lg font-medium mb-4">时间线</h3>
+						<h3 class="text-lg font-medium mb-4">欢迎使用</h3>
 						<div class="text-sm text-gray-500 mt-4">
-							<span>请先选择一个项目以查看时间线（任务列表）<br>*你知道吗？双击项目名称可以重命名</span>
+							<span>请先选择或者新建“项目”<br><br>*你知道吗？双击项目名称可以重命名</span>
+							<span><br>*本项目由人类策划，AI生成，旨在探索AI工作流，不可避免存在代码维护性较差的问题</span>
 						</div>
+						<el-upload class="upload-demo pt-2" action="" :auto-upload="false" :show-file-list="false"
+							accept=".json" :on-change="handleFileChange">
+							<el-button type="primary">导入数据</el-button>
+						</el-upload>
 					</div>
 					<div v-if="selectedTask">
 						<h3 class="text-lg font-medium mb-4">时间线 ( {{ selectedTask.name || "" }} )</h3>
