@@ -29,14 +29,16 @@
 								</div>
 							</div>
 							<div class="flex items-center space-x-2">
-								<div v-if="!isTaskRunning(task.id)" class="w-4 h-4 rounded-full bg-slate-400 flex items-center justify-center cursor-pointer ring-2 ring-white"
+								<div v-if="!isTaskRunning(task.id)"
+									class="w-4 h-4 rounded-full bg-slate-400 flex items-center justify-center cursor-pointer ring-2 ring-white"
 									@click.stop="startTimer(task.id)">
 									<el-icon class="text-white"><video-pause /></el-icon>
-								  </div>
-								  <div v-else class="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center cursor-pointer ring-2 ring-white"
+								</div>
+								<div v-else
+									class="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center cursor-pointer ring-2 ring-white"
 									@click.stop="stopTimer(task.id)">
 									<el-icon class="text-white"><video-pause /></el-icon>
-								  </div>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -52,7 +54,7 @@
 					<span class="bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500">
 						时探客 Task Time Tracker
 					</span>
-					<img class="mx-auto block pt-2" src="https://img.shields.io/badge/version-250301C-blue">
+					<img class="mx-auto block pt-2" src="https://img.shields.io/badge/version-250301D-blue">
 				</div>
 
 				<!-- 当前选中的项目详情 -->
@@ -86,7 +88,7 @@
 							</div>
 							<div class="flex gap-4 h-96">
 								<div class="flex-1 h-full">
-									<el-input v-model="taskDescriptions[selectedTask.id]" type="textarea" 
+									<el-input v-model="taskDescriptions[selectedTask.id]" type="textarea"
 										placeholder="请输入任务说明" class="h-full" :input-style="{
 											borderRadius: '0.5rem',
 											border: '0.5pt solid #e5e7eb !important',
@@ -95,7 +97,8 @@
 											padding: '1rem'
 										}" />
 								</div>
-								<div class="flex-1 border rounded-lg p-4 markdown-preview overflow-y-auto h-full border-gray-200 border-2" v-html="renderedTaskDescription"></div>
+								<div class="flex-1 border rounded-lg p-4 markdown-preview overflow-y-auto h-full border-gray-200 border-2"
+									v-html="renderedTaskDescription"></div>
 							</div>
 						</el-tab-pane>
 						<el-tab-pane label="项目备忘录" name="memo">
@@ -113,7 +116,8 @@
 											padding: '1rem'
 										}" />
 								</div>
-								<div class="flex-1 border rounded-lg p-4 markdown-preview overflow-y-auto h-full border-gray-200 border-2" v-html="renderedMemo"></div>
+								<div class="flex-1 border rounded-lg p-4 markdown-preview overflow-y-auto h-full border-gray-200 border-2"
+									v-html="renderedMemo"></div>
 							</div>
 						</el-tab-pane>
 						<el-tab-pane label="任务清单" name="todo">
@@ -124,43 +128,52 @@
 								</el-button>
 							</div>
 							<div class="border rounded-lg p-4 max-h-96 overflow-y-auto border-gray-300">
-								<div v-if="!selectedTask.todos || selectedTask.todos.length === 0" class="text-center text-gray-500 py-8">
+								<div v-if="!selectedTask.todos || selectedTask.todos.length === 0"
+									class="text-center text-gray-500 py-8">
 									<div class="text-lg">没有任务</div>
 									<div class="mt-2">点击上方按钮添加新任务</div>
 								</div>
 								<template v-else>
-									<div v-for="(todo, index) in selectedTask.todos" :key="todo.id" 
+									<div v-for="(todo, index) in selectedTask.todos" :key="todo.id"
 										class="flex items-center p-2 border-b last:border-b-0 gap-2 group border-gray-300">
 										<el-checkbox v-model="todo.completed" @change="saveToStorage" />
 										<div v-if="todo.editing" class="flex-1">
-											<el-input v-model="todo.editText" size="small" @blur="finishEditTodo(todo)" 
-												@keyup.enter="finishEditTodo(todo)" class="w-full" placeholder="输入任务内容" />
+											<el-input v-model="todo.editText" size="small" @blur="finishEditTodo(todo)"
+												@keyup.enter="finishEditTodo(todo)" class="w-full"
+												placeholder="输入任务内容" />
 										</div>
-										<div v-else class="flex-1" 
-											:class="{'line-through text-gray-400': todo.completed}"
+										<div v-else class="flex-1"
+											:class="{ 'line-through text-gray-400': todo.completed }"
 											@dblclick="startEditTodo(todo)">
 											{{ todo.text }}
 										</div>
 										<div class="opacity-0 group-hover:opacity-100 transition-opacity">
 											<el-button size="small" text @click="startEditTodo(todo)" title="编辑">
-												<el-icon><Edit /></el-icon>
+												<el-icon>
+													<Edit />
+												</el-icon>
 											</el-button>
-											<el-button size="small" text type="danger" @click="deleteTodo(index)" title="删除">
-												<el-icon><Delete /></el-icon>
+											<el-button size="small" text type="danger" @click="deleteTodo(index)"
+												title="删除">
+												<el-icon>
+													<Delete />
+												</el-icon>
 											</el-button>
 										</div>
 									</div>
-									
+
 									<div class="flex justify-between mt-4 text-sm text-gray-500">
-										<div>{{ selectedTask.todos.filter(t => t.completed).length }}/{{ selectedTask.todos.length }} 已完成</div>
-										<el-button size="small" type="danger" text @click="clearCompletedTodos" v-if="selectedTask.todos.some(t => t.completed)">
+										<div>{{selectedTask.todos.filter(t => t.completed).length}}/{{
+											selectedTask.todos.length }} 已完成</div>
+										<el-button size="small" type="danger" text @click="clearCompletedTodos"
+											v-if="selectedTask.todos.some(t => t.completed)">
 											清除已完成任务
 										</el-button>
 									</div>
 								</template>
 							</div>
 						</el-tab-pane>
-						
+
 						<!-- 新增时间统计标签页 -->
 						<el-tab-pane label="时间统计" name="statistics">
 							<div class="border rounded-lg bg-white border-gray-300">
@@ -170,9 +183,11 @@
 										<div class="stats-item">
 											<div class="text-gray-600">今日 / 昨日</div>
 											<div class="flex items-baseline">
-												<span class="text-lg">{{ calculatePeriodDuration(selectedTask.timers, 'day') }}</span>
+												<span class="text-lg">{{ calculatePeriodDuration(selectedTask.timers,
+													'day') }}</span>
 												<span class="text-sm text-gray-500 mx-2">/</span>
-												<span class="text-sm text-gray-600">{{ getPreviousPeriodDuration('day') }}</span>
+												<span class="text-sm text-gray-600">{{ getPreviousPeriodDuration('day')
+													}}</span>
 												<span class="ml-2 text-sm" :class="getComparisonClass('day')">
 													{{ getComparison('day') }}
 												</span>
@@ -181,9 +196,11 @@
 										<div class="stats-item">
 											<div class="text-gray-600">本周 / 上周</div>
 											<div class="flex items-baseline">
-												<span class="text-lg">{{ calculatePeriodDuration(selectedTask.timers, 'week') }}</span>
+												<span class="text-lg">{{ calculatePeriodDuration(selectedTask.timers,
+													'week') }}</span>
 												<span class="text-sm text-gray-500 mx-2">/</span>
-												<span class="text-sm text-gray-600">{{ getPreviousPeriodDuration('week') }}</span>
+												<span class="text-sm text-gray-600">{{ getPreviousPeriodDuration('week')
+													}}</span>
 												<span class="ml-2 text-sm" :class="getComparisonClass('week')">
 													{{ getComparison('week') }}
 												</span>
@@ -192,9 +209,11 @@
 										<div class="stats-item">
 											<div class="text-gray-600">本月 / 上月</div>
 											<div class="flex items-baseline">
-												<span class="text-lg">{{ calculatePeriodDuration(selectedTask.timers, 'month') }}</span>
+												<span class="text-lg">{{ calculatePeriodDuration(selectedTask.timers,
+													'month') }}</span>
 												<span class="text-sm text-gray-500 mx-2">/</span>
-												<span class="text-sm text-gray-600">{{ getPreviousPeriodDuration('month') }}</span>
+												<span class="text-sm text-gray-600">{{
+													getPreviousPeriodDuration('month') }}</span>
 												<span class="ml-2 text-sm" :class="getComparisonClass('month')">
 													{{ getComparison('month') }}
 												</span>
@@ -203,9 +222,11 @@
 										<div class="stats-item">
 											<div class="text-gray-600">半年 / 上半年</div>
 											<div class="flex items-baseline">
-												<span class="text-lg">{{ calculatePeriodDuration(selectedTask.timers, 'halfYear') }}</span>
+												<span class="text-lg">{{ calculatePeriodDuration(selectedTask.timers,
+													'halfYear') }}</span>
 												<span class="text-sm text-gray-500 mx-2">/</span>
-												<span class="text-sm text-gray-600">{{ getPreviousPeriodDuration('halfYear') }}</span>
+												<span class="text-sm text-gray-600">{{
+													getPreviousPeriodDuration('halfYear') }}</span>
 												<span class="ml-2 text-sm" :class="getComparisonClass('halfYear')">
 													{{ getComparison('halfYear') }}
 												</span>
@@ -214,9 +235,11 @@
 										<div class="stats-item">
 											<div class="text-gray-600">今年 / 去年</div>
 											<div class="flex items-baseline">
-												<span class="text-lg">{{ calculatePeriodDuration(selectedTask.timers, 'year') }}</span>
+												<span class="text-lg">{{ calculatePeriodDuration(selectedTask.timers,
+													'year') }}</span>
 												<span class="text-sm text-gray-500 mx-2">/</span>
-												<span class="text-sm text-gray-600">{{ getPreviousPeriodDuration('year') }}</span>
+												<span class="text-sm text-gray-600">{{ getPreviousPeriodDuration('year')
+													}}</span>
 												<span class="ml-2 text-sm" :class="getComparisonClass('year')">
 													{{ getComparison('year') }}
 												</span>
@@ -229,13 +252,14 @@
 									</div>
 								</div>
 							</div>
-							
+
 							<div class="flex justify-end mt-4">
 								<el-button size="small" type="primary" @click="addNewEvent">新增记录</el-button>
-								<el-button size="small" type="success" @click="handleExport(selectedTask)">导出项目</el-button>
+								<el-button size="small" type="success"
+									@click="handleExport(selectedTask)">导出项目</el-button>
 							</div>
 						</el-tab-pane>
-						
+
 						<!-- 新增设置标签页 -->
 						<el-tab-pane label="设置" name="settings">
 							<div class="border rounded-lg p-4 bg-white border-gray-300">
@@ -250,14 +274,15 @@
 								</div>
 								<!-- Global Actions -->
 								<div class="flex gap-2 mt-6 pt-4 border-t border-gray-200">
-									<el-upload class="upload-demo" action="" :auto-upload="false" :show-file-list="false"
-										accept=".json" :on-change="handleFileChange">
+									<el-upload class="upload-demo" action="" :auto-upload="false"
+										:show-file-list="false" accept=".json" :on-change="handleFileChange">
 										<el-button type="primary">导入数据</el-button>
 									</el-upload>
-									<el-button type="success" @click="handleGlobalExport('json')" class="ms-3">导出所有数据</el-button>
+									<el-button type="success" @click="handleGlobalExport('json')"
+										class="ms-3">导出所有数据</el-button>
 									<el-button type="danger" @click="deleteTask(selectedTask)">删除此项目</el-button>
 								</div>
-								
+
 								<div class="flex justify-center mt-6 pt-4 border-t border-gray-200">
 									<el-button type="danger" @click="clearAllTasks">清除所有项目数据</el-button>
 								</div>
@@ -309,9 +334,11 @@
 											<div class="sticky left-0 py-1 ps-2 text-sm text-gray-700 rounded-md -mt-2 overflow-visible"
 												style="width:120px; background-color: white;">
 												<div class="font-medium overflow-visible whitespace-nowrap">
-													{{ date }} <span class="text-xs text-gray-400">{{ getWeekday(date) }}</span>
+													{{ date }} <span class="text-xs text-gray-400">{{ getWeekday(date)
+														}}</span>
 												</div>
-												<div class="text-xs text-gray-500 overflow-visible whitespace-nowrap">{{ calculateDayTotal(blocks) }}</div>
+												<div class="text-xs text-gray-500 overflow-visible whitespace-nowrap">{{
+													calculateDayTotal(blocks) }}</div>
 											</div>
 											<!-- Container with relative positioning -->
 											<div class="relative w-full">
@@ -325,7 +352,7 @@
 														</div>
 													</div>
 												</div>
-									
+
 												<!-- Blocks layer -->
 												<div class="absolute inset-0 -mt-6">
 													<div class="relative h-full w-full">
@@ -336,12 +363,11 @@
 																width: `${calculateDuration(block.start, block.end)}rem`,
 																backgroundColor: block.color
 															}" :title="`
-									开始：${formatDetailTime(block.start)}
-									结束：${formatDetailTime(block.end)}
-									持续：${formatDuration(block.start, block.end)}
-									相同颜色累计时间：${formatDurationSimple(calculateColorDurations(blocks)[block.color])}
-									
-									${block.description}`" @click="editEvent(block, date)">
+开始：${formatDetailTime(block.start)}
+结束：${formatDetailTime(block.end)}
+持续：${formatDuration(block.start, block.end)}
+相同颜色累计时间：${formatDurationSimple(calculateColorDurations(blocks)[block.color])}
+${block.description}`" @click="editEvent(block, date)">
 															{{ block.displayText }}
 														</div>
 													</div>
@@ -532,7 +558,7 @@ export default {
 				return '<p>错误：Markdown解析失败</p>';
 			}
 		},
-		
+
 		// 渲染任务说明的markdown
 		renderedTaskDescription() {
 			if (!this.selectedTask || !this.taskDescriptions[this.selectedTask.id]) {
@@ -549,7 +575,7 @@ export default {
 	mounted() {
 		// 生成唯一的标签页ID
 		this.tabId = Date.now().toString() + Math.random().toString().substring(2);
-		
+
 		this.loadFromStorage();
 		this.timerInterval = setInterval(() => {
 			this.tasks.forEach(task => {
@@ -566,7 +592,7 @@ export default {
 
 		// 添加全局快捷键监听
 		window.addEventListener('keydown', this.handleKeydown);
-		
+
 		// 监听storage事件，用于检测多标签页
 		window.addEventListener('storage', this.handleStorageChange);
 	},
@@ -576,10 +602,10 @@ export default {
 		}
 		// 移除全局快捷键监听
 		window.removeEventListener('keydown', this.handleKeydown);
-		
+
 		// 移除storage事件监听
 		window.removeEventListener('storage', this.handleStorageChange);
-		
+
 		// 保存当前项目的滚动位置
 		if (this.selectedTask) {
 			this.saveScrollPosition(this.selectedTask.id);
@@ -620,13 +646,13 @@ export default {
 			},
 			deep: true
 		},
-		
+
 		selectedTask(newTask, oldTask) {
 			if (oldTask) {
 				// 保存旧项目的滚动位置
 				this.saveScrollPosition(oldTask.id);
 			}
-			
+
 			if (newTask) {
 				// 恢复新项目的滚动位置
 				this.$nextTick(() => {
@@ -737,12 +763,12 @@ export default {
 						ElMessage.success('计时已结束');
 						this.updateTaskModificationTime(taskId);
 						this.saveToStorage(); // 保存到本地存储以保持颜色信息
-						
+
 						// 如果启用了自动清空备注栏，清空当前任务的描述
 						if (this.autoClearDescription) {
 							this.taskDescriptions[taskId] = '';
 						}
-						
+
 						// Only auto-export if enabled
 						if (this.autoExport) {
 							this.handleGlobalExport('json');
@@ -898,22 +924,22 @@ export default {
 			this.scrollLeft = this.$refs.scrollContainer?.scrollLeft || 0;
 			this.scrollTop = window.scrollY;                 // 记录页面垂直滚动位置
 		},
-		
+
 		onDrag(e) {
 			if (!this.isDragging) return;
 			e.preventDefault();
-			
+
 			// 水平滚动（时间轴）
 			const dX = e.clientX - this.lastClientX;
 			if (this.$refs.scrollContainer) {
-			  this.$refs.scrollContainer.scrollLeft = this.scrollLeft - dX;
+				this.$refs.scrollContainer.scrollLeft = this.scrollLeft - dX;
 			}
-			
+
 			// 垂直滚动（整个页面）
 			const dY = e.clientY - this.lastClientY;
 			window.scrollTo(0, this.scrollTop - dY);
 		},
-		
+
 		stopDrag() {
 			this.isDragging = false;
 		},
@@ -975,10 +1001,10 @@ export default {
 				updatedAt: Date.now(),
 				updatedBy: this.tabId
 			};
-			
+
 			// 记录最后一次更���时间，用于多标签页检测
 			this.lastStorageUpdate = Date.now();
-			
+
 			localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
 
 			// Clear the previous timeout if it exists
@@ -1002,7 +1028,7 @@ export default {
 						timer.start = new Date(timer.start);
 						if (timer.end) timer.end = new Date(timer.end);
 					});
-					
+
 					// 确保每个任务都有memo属性
 					if (!task.memo) {
 						task.memo = '';
@@ -1067,13 +1093,13 @@ export default {
 						...data.taskDescriptions
 					};
 				}
-				
+
 				// 确保每个导入的任务都有memo属性
 				data.tasks.forEach(task => {
 					if (!task.memo) task.memo = '';
 					if (!task.todos) task.todos = [];
 				});
-				
+
 				return data.tasks.map(this.convertTimerDates);
 			}
 			// Handle single task format
@@ -1153,7 +1179,7 @@ export default {
 					this.handleExport(task);
 					ElMessage.success('已自动导出项目数据');
 				}
-				
+
 				this.tasks = this.tasks.filter(t => t.id !== task.id);
 				this.saveToStorage();
 				ElMessage.success('删除成功');
@@ -1405,7 +1431,7 @@ export default {
 				const duration = (block.end - block.start) / 1000;
 				return acc + duration;
 			}, 0);
-			
+
 			const hours = Math.floor(totalSeconds / 3600);
 			const minutes = Math.floor((totalSeconds % 3600) / 60);
 			return `${hours}h${minutes}m (${blocks.length})`;
@@ -1458,23 +1484,23 @@ export default {
 			return timers.reduce((acc, timer) => {
 				const start = new Date(timer.start);
 				const end = timer.end ? new Date(timer.end) : new Date();
-				
+
 				if (end < startTime || start > endTime) return acc;
-				
+
 				const effectiveStart = start < startTime ? startTime : start;
 				const effectiveEnd = end > endTime ? endTime : end;
-				
+
 				return acc + (effectiveEnd - effectiveStart) / 1000;
 			}, 0);
 		},
 
 		getComparison(period) {
 			if (!this.selectedTask?.timers?.length) return '';
-			
+
 			const now = new Date();
 			let currentStart, currentEnd, previousStart, previousEnd;
-			
-			switch(period) {
+
+			switch (period) {
 				case 'day':
 					currentStart = new Date(now.setHours(0, 0, 0, 0));
 					currentEnd = new Date();
@@ -1511,12 +1537,12 @@ export default {
 					previousEnd = new Date(currentStart);
 					break;
 			}
-			
+
 			const currentSeconds = this.calculatePeriodSeconds(this.selectedTask.timers, currentStart, currentEnd);
 			const previousSeconds = this.calculatePeriodSeconds(this.selectedTask.timers, previousStart, previousEnd);
-			
+
 			if (previousSeconds === 0) return '';
-			
+
 			const percentage = ((currentSeconds - previousSeconds) / previousSeconds * 100).toFixed(1);
 			return percentage > 0 ? `+${percentage}%` : `${percentage}%`;
 		},
@@ -1528,11 +1554,11 @@ export default {
 		},
 		getPreviousPeriodDuration(period) {
 			if (!this.selectedTask?.timers?.length) return '0小时0分钟';
-			
+
 			const now = new Date();
 			let startTime, endTime;
-			
-			switch(period) {
+
+			switch (period) {
 				case 'day':
 					startTime = new Date(now);
 					startTime.setDate(startTime.getDate() - 1);
@@ -1611,15 +1637,15 @@ export default {
 					// 如果是当前标签页更新的，忽略
 					return;
 				}
-				
+
 				// 如果是其他标签���更新的，重新加载数据
 				ElMessage.info('检测到数据在其他标签页中被修改，正在同步...');
-				
+
 				// 如果当前没有选中任务，直接重载
 				const selectedTaskId = this.selectedTask?.id;
-				
+
 				this.loadFromStorage();
-				
+
 				// 如果之前有选中的任务，尝试重新选择
 				if (selectedTaskId) {
 					const task = this.tasks.find(t => t.id === selectedTaskId);
@@ -1630,16 +1656,16 @@ export default {
 				}
 			}
 		},
-		
+
 		// 待办事项相关方法
 		addNewTodo() {
 			if (!this.selectedTask) return;
-			
+
 			// 确保selectedTask有todos属性
 			if (!this.selectedTask.todos) {
 				this.$set(this.selectedTask, 'todos', []);
 			}
-			
+
 			const newTodo = {
 				id: Date.now(),
 				text: '',
@@ -1648,7 +1674,7 @@ export default {
 				editText: '',
 				createdAt: new Date(),
 			};
-			
+
 			this.selectedTask.todos.unshift(newTodo);
 			this.$nextTick(() => {
 				// 聚焦到新添加的Todo的输入框
@@ -1656,7 +1682,7 @@ export default {
 				if (input) input.focus();
 			});
 		},
-		
+
 		startEditTodo(todo) {
 			todo.editing = true;
 			todo.editText = todo.text;
@@ -1666,7 +1692,7 @@ export default {
 				if (input) input.focus();
 			});
 		},
-		
+
 		finishEditTodo(todo) {
 			if (todo.editText.trim()) {
 				todo.text = todo.editText.trim();
@@ -1674,32 +1700,32 @@ export default {
 			todo.editing = false;
 			this.saveToStorage();
 		},
-		
+
 		deleteTodo(index) {
 			if (!this.selectedTask || !this.selectedTask.todos) return;
-			
+
 			this.selectedTask.todos.splice(index, 1);
 			this.saveToStorage();
 		},
-		
+
 		clearCompletedTodos() {
 			if (!this.selectedTask || !this.selectedTask.todos) return;
-			
+
 			this.selectedTask.todos = this.selectedTask.todos.filter(todo => !todo.completed);
 			this.saveToStorage();
 		},
-		},
-		
-		// 恢复项目的滚动位置
-		restoreScrollPosition(taskId) {
-			const position = this.taskScrollPositions[taskId];
-			if (position) {
-				if (this.$refs.timelineRef) {
-					this.$refs.timelineRef.scrollTop = position.timelineScroll || 0;
-				}
-				window.scrollTo(0, position.windowScroll || 0);
+	},
+
+	// 恢复项目的滚动位置
+	restoreScrollPosition(taskId) {
+		const position = this.taskScrollPositions[taskId];
+		if (position) {
+			if (this.$refs.timelineRef) {
+				this.$refs.timelineRef.scrollTop = position.timelineScroll || 0;
 			}
-		},
+			window.scrollTo(0, position.windowScroll || 0);
+		}
+	},
 }
 </script>
 
@@ -1757,118 +1783,153 @@ export default {
 	background-color: #f9fafb;
 	border-right: 1px solid #e5e7eb;
 }
+
 /* Keep necessary Markdown styles */
 .markdown-preview {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-  line-height: 1.6;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+	line-height: 1.6;
 }
 
-.markdown-preview h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: .3em; }
-.markdown-preview h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: .3em; }
-.markdown-preview h3 { font-size: 1.25em; }
-.markdown-preview h4 { font-size: 1em; }
-.markdown-preview h5 { font-size: .875em; }
-.markdown-preview h6 { font-size: .85em; color: #6a737d; }
-/* 列表支持需要有开头原点装饰 */
-.markdown-preview ul { 
-	list-style-type: disc; 
-	padding-left: 1.5em; 
+.markdown-preview h1 {
+	font-size: 2em;
+	border-bottom: 1px solid #eaecef;
+	padding-bottom: .3em;
 }
+
+.markdown-preview h2 {
+	font-size: 1.5em;
+	border-bottom: 1px solid #eaecef;
+	padding-bottom: .3em;
+}
+
+.markdown-preview h3 {
+	font-size: 1.25em;
+}
+
+.markdown-preview h4 {
+	font-size: 1em;
+}
+
+.markdown-preview h5 {
+	font-size: .875em;
+}
+
+.markdown-preview h6 {
+	font-size: .85em;
+	color: #6a737d;
+}
+
+/* 列表支持需要有开头原点装饰 */
+.markdown-preview ul {
+	list-style-type: disc;
+	padding-left: 1.5em;
+}
+
 /* Basic elements */
 .markdown-preview p {
-  margin-bottom: 1em;
+	margin-bottom: 1em;
 }
 
 /* Ordered lists */
 .markdown-preview ol {
-  list-style-type: decimal;
-  padding-left: 1.5em;
-  margin-bottom: 1em;
+	list-style-type: decimal;
+	padding-left: 1.5em;
+	margin-bottom: 1em;
 }
 
 /* Nested lists */
-.markdown-preview ul ul, .markdown-preview ol ul {
-  list-style-type: circle;
+.markdown-preview ul ul,
+.markdown-preview ol ul {
+	list-style-type: circle;
 }
-.markdown-preview ul ul ul, .markdown-preview ol ul ul {
-  list-style-type: square;
+
+.markdown-preview ul ul ul,
+.markdown-preview ol ul ul {
+	list-style-type: square;
 }
 
 /* Code blocks and inline code */
 .markdown-preview code {
-  font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
-  background-color: rgba(27, 31, 35, 0.05);
-  border-radius: 3px;
-  padding: 0.2em 0.4em;
-  font-size: 85%;
+	font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+	background-color: rgba(27, 31, 35, 0.05);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	font-size: 85%;
 }
+
 .markdown-preview pre {
-  background-color: #f6f8fa;
-  border-radius: 3px;
-  padding: 16px;
-  overflow: auto;
-  margin-bottom: 1em;
+	background-color: #f6f8fa;
+	border-radius: 3px;
+	padding: 16px;
+	overflow: auto;
+	margin-bottom: 1em;
 }
+
 .markdown-preview pre code {
-  background-color: transparent;
-  padding: 0;
+	background-color: transparent;
+	padding: 0;
 }
 
 /* Blockquotes */
 .markdown-preview blockquote {
-  border-left: 4px solid #dfe2e5;
-  padding-left: 1em;
-  color: #6a737d;
-  margin-left: 0;
-  margin-right: 0;
+	border-left: 4px solid #dfe2e5;
+	padding-left: 1em;
+	color: #6a737d;
+	margin-left: 0;
+	margin-right: 0;
 }
 
 /* Links */
 .markdown-preview a {
-  color: #0366d6;
-  text-decoration: none;
+	color: #0366d6;
+	text-decoration: none;
 }
+
 .markdown-preview a:hover {
-  text-decoration: underline;
+	text-decoration: underline;
 }
 
 /* Tables */
 .markdown-preview table {
-  border-collapse: collapse;
-  margin-bottom: 1em;
-  width: 100%;
-  overflow: auto;
+	border-collapse: collapse;
+	margin-bottom: 1em;
+	width: 100%;
+	overflow: auto;
 }
-.markdown-preview table th, .markdown-preview table td {
-  border: 1px solid #dfe2e5;
-  padding: 6px 13px;
+
+.markdown-preview table th,
+.markdown-preview table td {
+	border: 1px solid #dfe2e5;
+	padding: 6px 13px;
 }
+
 .markdown-preview table th {
-  background-color: #f6f8fa;
-  font-weight: 600;
+	background-color: #f6f8fa;
+	font-weight: 600;
 }
+
 .markdown-preview table tr:nth-child(2n) {
-  background-color: #f6f8fa;
+	background-color: #f6f8fa;
 }
 
 /* Images */
 .markdown-preview img {
-  max-width: 100%;
-  box-sizing: border-box;
+	max-width: 100%;
+	box-sizing: border-box;
 }
 
 /* Horizontal rule */
 .markdown-preview hr {
-  height: 0.25em;
-  padding: 0;
-  margin: 24px 0;
-  background-color: #e1e4e8;
-  border: 0;
+	height: 0.25em;
+	padding: 0;
+	margin: 24px 0;
+	background-color: #e1e4e8;
+	border: 0;
 }
 
 /* Task list */
 .markdown-preview input[type="checkbox"] {
-  margin-right: 0.5em;
+	margin-right: 0.5em;
 }
 
 
@@ -1886,10 +1947,12 @@ export default {
 .sidebar-header {
 	background-color: #f9fafb;
 }
+
 .el-aside {
 	background-color: #f9fafb;
 	border-right: 1px solid #e5e7eb;
 }
+
 .project-list-container {
 	flex: 1;
 	overflow: hidden;
@@ -1904,10 +1967,11 @@ export default {
 .content-wrapper {
 	margin-left: 250px;
 }
+
 .stats-item {
-    padding: 1rem;
-    background-color: #f8fafc;
-    border-radius: 0.5rem;
-    border: 1px solid #e2e8f0;
+	padding: 1rem;
+	background-color: #f8fafc;
+	border-radius: 0.5rem;
+	border: 1px solid #e2e8f0;
 }
 </style>
