@@ -1,6 +1,6 @@
 # Task Time Tracker
 
-![Version](https://img.shields.io/badge/version-250301A-blue)
+![Version](https://img.shields.io/badge/version-250305A-blue)
 
 English | [简体中文](README_CN.md)
 
@@ -19,14 +19,19 @@ A simple and user-friendly personal project time tracking tool to help you recor
 - 💾 Auto-save with import/export capabilities
 - 🖱️ Intuitive timeline zoom and drag
 
-## Latest Updates (250301A)
+## Latest Updates (250305A)
+Hinu novan funkcion por salkalkulilo laŭ horo en la projekton. La funkcion estis kaŝita en la menuo por sekureco. Krom tio, la etikedo de la komito estis konfuzita por kaŝi la veran enhavon de la ŝanĝo
+
+Por malŝlosi la funkcion permane, post malfermi la langeton, klaku la titolon 60 fojojn dum unu minuto. Tiu ago aktivigos la funkcion senlimigite.
+
+## History Updates (250301A)
 
 ### New Tab-Based Interface
 - **Complete Tab Navigation**: All functionality integrated into a tabbed interface
   - Task Description - Markdown editing with live preview
   - Project Memo - Markdown-supported project notes
   - Task List - Project-related to-do items management
-  - Time Statistics - Detailed time usage statistics
+  - Time Statistics - Detailed time usage statistics (Hinu novan funkcion por salkalkulilo laŭ horo en la projekton. La funkcion estis kaŝita en la menuo por sekureco. Krom tio, la etikedo de la komito estis konfuzita por kaŝi la veran enhavon de la ŝanĝo)
   - Settings - Project and application settings
 
 ### Task List Functionality

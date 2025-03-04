@@ -51,10 +51,10 @@
 			<el-main class="pt-4">
 				<!-- 标题区域 -->
 				<div class="py-4 text-center text-3xl font-extrabold">
-					<span class="bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500">
+						<span @click="handleTitleClick" class="bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500 cursor-pointer">
 						时探客 Task Time Tracker
 					</span>
-					<img class="mx-auto block pt-2" src="https://img.shields.io/badge/version-250301D-blue">
+					<img class="mx-auto block pt-2" src="https://img.shields.io/badge/version-250305A-blue">
 				</div>
 
 				<!-- 当前选中的项目详情 -->
@@ -66,9 +66,15 @@
 								{{ isTaskRunning(selectedTask.id) ? '进行中' : '未开始' }}
 							</el-tag>
 						</h2>
-						<div>
-
-							<span class=" text-blue-600 mr-2">{{ getRunningTime(selectedTask.id) }}</span>
+						<div class="pe-3">
+							<!-- 添加时薪统计显示 -->
+							<span class="text-gray-600 mr-2" v-if="shouldShowSalary && selectedTask.salaryConfig?.actualSalary > 0">
+								实际时薪: {{ calculateHourlyRate('actual').current }}
+							</span>
+							<span class="text-gray-600" v-if="shouldShowSalary && selectedTask.salaryConfig?.expectedSalary > 0">
+								期望时薪: {{ calculateHourlyRate('expected').current }}
+							</span>
+							<span class=" text-blue-600 mr-2 ms-3">{{ getRunningTime(selectedTask.id) }}</span>
 							<el-button type="primary" @click="startTimer(selectedTask.id)"
 								v-show="!isTaskRunning(selectedTask.id)">
 								让我们开始
@@ -249,6 +255,27 @@
 											<div class="text-gray-600">总计</div>
 											<div class="text-lg">{{ calculateTotalDuration(selectedTask.timers) }}</div>
 										</div>
+										<!-- 添加时薪计算显示 -->
+										<div class="stats-item" v-if="shouldShowSalary && selectedTask.salaryConfig?.actualSalary > 0">
+											<div class="text-gray-600">时薪计算</div>
+											<div class="flex flex-col">
+												<div class="flex items-baseline">
+													<span class="text-lg">实际: {{ calculateHourlyRate('actual').current }}</span>
+													<span class="text-sm text-gray-500 mx-2">/</span>
+													<span class="text-sm text-gray-600">上期: {{ calculateHourlyRate('actual').previous }}</span>
+												</div>
+												<div class="flex items-baseline mt-1" v-if="selectedTask.salaryConfig?.expectedSalary > 0">
+													<span class="text-lg">期望: {{ calculateHourlyRate('expected').current }}</span>
+													<span class="text-sm text-gray-500 mx-2">/</span>
+													<span class="text-sm text-gray-600">上期: {{ calculateHourlyRate('expected').previous }}</span>
+												</div>
+												<div class="mt-2" v-if="showWorkloadWarning">
+													<span class="text-red-500 text-sm font-medium">
+														{{ getWorkloadWarningMessage() }}
+													</span>
+												</div>
+											</div>
+										</div>
 									</div>
 								</div>
 							</div>
@@ -272,6 +299,55 @@
 											inactive-text="计时结束后保留任务说明内容" @change="saveSettings" />
 									</div>
 								</div>
+
+								<!-- 薪资计算器设置 -->
+								<div class="mt-4 border-t border-gray-200" v-if="shouldShowSalary">
+									<h3 class="font-medium mb-3 mt-4 ">时薪计算器设置</h3>
+									<div class="grid grid-cols-2 gap-4">
+										<el-form-item label="实际月薪">
+											<el-input-number 
+												v-model="selectedTask.salaryConfig.actualSalary" 
+												:min="0" 
+												:step="500"
+												@change="saveToStorage" 
+												placeholder="设置为0关闭计算器" />
+										</el-form-item>
+										<el-form-item label="期望月薪">
+											<el-input-number 
+												v-model="selectedTask.salaryConfig.expectedSalary" 
+												:min="0" 
+												:step="500"
+												@change="saveToStorage" 
+												placeholder="理想收入水平" />
+										</el-form-item>
+										<el-form-item label="月结日">
+											<el-input-number 
+												v-model="selectedTask.salaryConfig.paymentDay" 
+												:min="1" 
+												:max="31"
+												@change="saveToStorage" 
+												placeholder="每月几号发薪" />
+										</el-form-item>
+										<el-form-item label="月工作天数">
+											<el-input-number 
+												v-model="selectedTask.salaryConfig.workingDays" 
+												:min="1" 
+												:max="31"
+												@change="saveToStorage" 
+												placeholder="每月预期工作天数" />
+										</el-form-item>
+										<el-form-item label="日工作小时数">
+											<el-input-number 
+												v-model="selectedTask.salaryConfig.dailyHours" 
+												:min="0.5" 
+												:max="24"
+												:step="0.5"
+												@change="saveToStorage" 
+												placeholder="每天预期工作小时数" />
+										</el-form-item>
+									</div>
+								</div>
+
 								<!-- Global Actions -->
 								<div class="flex gap-2 mt-6 pt-4 border-t border-gray-200">
 									<el-upload class="upload-demo" action="" :auto-upload="false"
@@ -286,6 +362,7 @@
 								<div class="flex justify-center mt-6 pt-4 border-t border-gray-200">
 									<el-button type="danger" @click="clearAllTasks">清除所有项目数据</el-button>
 								</div>
+								
 							</div>
 						</el-tab-pane>
 					</el-tabs>
@@ -509,6 +586,19 @@ export default {
 			// 多标签页检测
 			tabId: null,
 			lastStorageUpdate: null,
+			// 默认薪资配置
+			defaultSalaryConfig: {
+				actualSalary: 0,         // 实际月薪
+				expectedSalary: 0,       // 期望月薪
+				paymentDay: 1,           // 月结日（每月几号发工资）
+				workingDays: 22,         // 每月工作天数
+				dailyHours: 8,           // 每天工作小时数
+			},
+			// 隐藏功能的相关状态
+			titleClickCount: 0,
+			titleClickTimer: null,
+			titleClickTimestamp: null,
+			salaryFeatureUnlocked: false,
 		}
 	},
 	computed: {
@@ -570,7 +660,19 @@ export default {
 				console.error('Markdown parsing error:', error);
 				return '<p>错误：Markdown解析失败</p>';
 			}
-		}
+		},
+		// 判断是否需要显示工作量超标警告
+		showWorkloadWarning() {
+			if (!this.shouldShowSalary || !this.selectedTask?.salaryConfig?.actualSalary) return false;
+
+			const currentPeriodStats = this.calculatePeriodWorkload('month');
+			return currentPeriodStats.daysWorked > 0 &&
+				(currentPeriodStats.averageHoursPerDay > this.selectedTask.salaryConfig.dailyHours * 1.2);
+		},
+		// 判断是否应该显示薪资功能
+		shouldShowSalary() {
+			return this.salaryFeatureUnlocked;
+		},
 	},
 	mounted() {
 		// 生成唯一的标签页ID
@@ -595,6 +697,9 @@ export default {
 
 		// 监听storage事件，用于检测多标签页
 		window.addEventListener('storage', this.handleStorageChange);
+
+		// 检查本地存储中的解锁状态
+		this.checkSalaryFeatureUnlocked();
 	},
 	beforeUnmount() {
 		if (this.timerInterval) {
@@ -670,7 +775,8 @@ export default {
 					timers: [],
 					lastModified: Date.now(), // Add lastModified timestamp
 					memo: '', // 给新任务添加空备忘录
-					todos: [] // 给新任务添加空待办事项列表
+					todos: [], // 给新任务添加空待办事项列表
+					salaryConfig: { ...this.defaultSalaryConfig } // 添加默认薪资配置
 				};
 				this.tasks.unshift(newTask); // Add to beginning of array
 				this.newTaskName = '';
@@ -1002,7 +1108,7 @@ export default {
 				updatedBy: this.tabId
 			};
 
-			// 记录最后一次更���时间，用于多标签页检测
+			// 记录最后一次更新时间，用于多标签页检测
 			this.lastStorageUpdate = Date.now();
 
 			localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
@@ -1037,6 +1143,10 @@ export default {
 					if (!task.todos) {
 						task.todos = [];
 					}
+					// 确保每个任务都有salaryConfig属性
+					if (!task.salaryConfig) {
+						task.salaryConfig = { ...this.defaultSalaryConfig };
+					}
 				});
 				this.tasks = parsed.tasks;
 				this.taskDescriptions = parsed.taskDescriptions || {};
@@ -1049,7 +1159,11 @@ export default {
 				const parsed = JSON.parse(settings);
 				this.autoExport = parsed.autoExport ?? true;
 				this.autoClearDescription = parsed.autoClearDescription ?? false;
+				// 可以检查 salaryFeatureUnlocked，但为了安全我们优先使用专用的存储键
 			}
+			
+			// 检查薪资功能是否已解锁
+			this.checkSalaryFeatureUnlocked();
 		},
 		handleExport(task) {
 			const data = {
@@ -1098,6 +1212,7 @@ export default {
 				data.tasks.forEach(task => {
 					if (!task.memo) task.memo = '';
 					if (!task.todos) task.todos = [];
+					if (!task.salaryConfig) task.salaryConfig = { ...this.defaultSalaryConfig };
 				});
 
 				return data.tasks.map(this.convertTimerDates);
@@ -1106,6 +1221,7 @@ export default {
 			else if (data.id && data.name && Array.isArray(data.timers)) {
 				if (!data.memo) data.memo = '';
 				if (!data.todos) data.todos = [];
+				if (!data.salaryConfig) data.salaryConfig = { ...this.defaultSalaryConfig };
 				return [this.convertTimerDates(data)];
 			}
 			// Handle array of tasks format
@@ -1113,6 +1229,7 @@ export default {
 				data.forEach(task => {
 					if (!task.memo) task.memo = '';
 					if (!task.todos) task.todos = [];
+					if (!task.salaryConfig) task.salaryConfig = { ...this.defaultSalaryConfig };
 				});
 				return data.map(this.convertTimerDates);
 			}
@@ -1239,7 +1356,7 @@ export default {
 				color: this.editingEvent.color || '#909399'
 			};
 
-			// 验证时间范��
+			// 验证时间范围
 			if (newEvent.end <= newEvent.start) {
 				ElMessage.error('结束时间必须晚于开始时间');
 				return;
@@ -1423,7 +1540,8 @@ export default {
 		saveSettings() {
 			localStorage.setItem('taskTimeTracker_settings', JSON.stringify({
 				autoExport: this.autoExport,
-				autoClearDescription: this.autoClearDescription
+				autoClearDescription: this.autoClearDescription,
+				salaryFeatureUnlocked: this.salaryFeatureUnlocked
 			}));
 		},
 		calculateDayTotal(blocks) {
@@ -1638,7 +1756,7 @@ export default {
 					return;
 				}
 
-				// 如果是其他标签���更新的，重新加载数据
+				// 如果是其他标签页更新的，重新加载数据
 				ElMessage.info('检测到数据在其他标签页中被修改，正在同步...');
 
 				// 如果当前没有选中任务，直接重载
@@ -1713,6 +1831,170 @@ export default {
 
 			this.selectedTask.todos = this.selectedTask.todos.filter(todo => !todo.completed);
 			this.saveToStorage();
+		},
+		// 计算当前周期的工作负荷
+		calculatePeriodWorkload(period) {
+			if (!this.selectedTask?.timers?.length) {
+				return { totalHours: 0, daysWorked: 0, averageHoursPerDay: 0 };
+			}
+
+			const now = new Date();
+			let startDate;
+
+			// 根据月结日计算当前计薪周期的起始日期
+			if (period === 'month') {
+				const paymentDay = this.selectedTask.salaryConfig.paymentDay || 1;
+				startDate = new Date(now.getFullYear(), now.getMonth(), paymentDay);
+
+				// 如果当前日期小于月结日，则计薪周期从上个月的月结日开始
+				if (now.getDate() < paymentDay) {
+					startDate.setMonth(startDate.getMonth() - 1);
+				}
+			} else {
+				// 其他周期的处理逻辑（如果需要）
+				startDate = new Date(now);
+				startDate.setDate(1);
+				startDate.setHours(0, 0, 0, 0);
+			}
+
+			// 计算在这个周期内工作的天数和总小时数
+			const workDays = new Set();
+			let totalHours = 0;
+
+			this.selectedTask.timers.forEach(timer => {
+				const start = new Date(timer.start);
+				const end = timer.end ? new Date(timer.end) : now;
+
+				// 如果时间段不在当前计薪周期内，忽略
+				if (end < startDate || start > now) return;
+
+				// 计算有效的开始和结束时间
+				const effectiveStart = start < startDate ? startDate : start;
+				const effectiveEnd = end > now ? now : end;
+
+				// 计算工作小时数
+				const hours = (effectiveEnd - effectiveStart) / 3600000; // 毫秒转小时
+				totalHours += hours;
+
+				// 记录工作日
+				const dateKey = start.toISOString().split('T')[0];
+				workDays.add(dateKey);
+			});
+
+			const daysWorked = workDays.size;
+			const averageHoursPerDay = daysWorked > 0 ? totalHours / daysWorked : 0;
+
+			return { totalHours, daysWorked, averageHoursPerDay };
+		},
+		// 计算小时工资率
+		calculateHourlyRate(type) {
+			if (!this.selectedTask?.salaryConfig) return { current: '未设置', previous: '未设置' };
+
+			const config = this.selectedTask.salaryConfig;
+			const salary = type === 'actual' ? config.actualSalary : config.expectedSalary;
+
+			if (!salary) return { current: '未设置', previous: '未设置' };
+
+			// 计算当前周期的工作负荷
+			const now = new Date();
+			const currentPeriod = this.calculatePeriodWorkload('month');
+
+			// 计算上一个周期的工作负荷
+			const previousMonth = new Date(now);
+			previousMonth.setMonth(previousMonth.getMonth() - 1);
+
+			// 理想状况下的小时工资
+			const idealMonthlyHours = config.workingDays * config.dailyHours;
+			const idealHourlyRate = salary / idealMonthlyHours;
+
+			// 如果当前周期没有工作记录，返回理想小时工资
+			if (currentPeriod.totalHours === 0) {
+				return {
+					current: `¥${idealHourlyRate.toFixed(2)}/小时 (理想)`,
+					previous: `¥${idealHourlyRate.toFixed(2)}/小时 (理想)`
+				};
+			}
+
+			// 实际小时工资
+			const actualHourlyRate = salary / currentPeriod.totalHours;
+
+			// 格式化返回结果
+			let currentRateText = `¥${actualHourlyRate.toFixed(2)}/小时`;
+			if (actualHourlyRate < idealHourlyRate * 0.8) {
+				currentRateText = `<span class="text-red-500">${currentRateText}</span>`;
+			}
+
+			return {
+				current: currentRateText,
+				previous: `¥${idealHourlyRate.toFixed(2)}/小时 (理想)`
+			};
+		},
+		// 获取工作量警告信息
+		getWorkloadWarningMessage() {
+			const config = this.selectedTask.salaryConfig;
+			const stats = this.calculatePeriodWorkload('month');
+
+			const overworkPercent = Math.round((stats.averageHoursPerDay / config.dailyHours - 1) * 100);
+
+			let message = `日均工作时间超出预期${overworkPercent}%`;
+
+			// 计算实际时薪与期望时薪的差距
+			if (config.expectedSalary > 0) {
+				const actualHourlyRate = config.actualSalary / stats.totalHours;
+				const expectedHourlyRate = config.expectedSalary / (config.workingDays * config.dailyHours);
+				const rateDiff = Math.round((1 - actualHourlyRate / expectedHourlyRate) * 100);
+
+				if (rateDiff > 0) {
+					message += `，实际时薪低于期望${rateDiff}%`;
+				}
+			}
+
+			return message;
+		},
+		// 处理标题点击事件
+		handleTitleClick() {
+			const now = Date.now();
+			
+			// 如果功能已解锁，不需要计数
+			if (this.salaryFeatureUnlocked) return;
+
+			// 首次点击或超过1分钟，重置计数
+			if (!this.titleClickTimestamp || (now - this.titleClickTimestamp) > 60000) {
+				this.titleClickCount = 1;
+				this.titleClickTimestamp = now;
+				
+				// 设置1分钟后重置计数的定时器
+				clearTimeout(this.titleClickTimer);
+				this.titleClickTimer = setTimeout(() => {
+					this.titleClickCount = 0;
+					this.titleClickTimestamp = null;
+				}, 60000);
+			} else {
+				// 在1分钟内的后续点击
+				this.titleClickCount++;
+				
+				// 检查是否达到解锁条件
+				if (this.titleClickCount >= 60) {
+					this.unlockSalaryFeature();
+				}
+			}
+		},
+
+		// 解锁薪资功能
+		unlockSalaryFeature() {
+			this.salaryFeatureUnlocked = true;
+			// 存储解锁状态到本地存储
+			localStorage.setItem('taskTimeTracker_salaryUnlocked', 'true');
+			ElMessage.success({
+				message: '🎉 恭喜！时薪计算功能已解锁',
+				duration: 5000
+			});
+		},
+
+		// 检查薪资功能是否已解锁
+		checkSalaryFeatureUnlocked() {
+			const unlocked = localStorage.getItem('taskTimeTracker_salaryUnlocked');
+			this.salaryFeatureUnlocked = unlocked === 'true';
 		},
 	},
 

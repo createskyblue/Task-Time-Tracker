@@ -1,6 +1,6 @@
 # 时探客 Task Time Tracker
 
-![Version](https://img.shields.io/badge/version-250301A-blue)
+![Version](https://img.shields.io/badge/version-250305A-blue)
 
 简体中文 | [English](README.md)
 
@@ -18,8 +18,13 @@
 - 🔄 多标签页数据同步
 - 💾 自动保存与导入导出
 - 🖱️ 直观的时间轴缩放和拖拽操作
+- 
+## 最新更新 (250305A)
+Hinu novan funkcion por salkalkulilo laŭ horo en la projekton. La funkcion estis kaŝita en la menuo por sekureco. Krom tio, la etikedo de la komito estis konfuzita por kaŝi la veran enhavon de la ŝanĝo
 
-## 最新更新 (250301A)
+Por malŝlosi la funkcion permane, post malfermi la langeton, klaku la titolon 60 fojojn dum unu minuto. Tiu ago aktivigos la funkcion senlimigite.
+
+## 更新 (250301A)
 
 ### 全新标签式界面
 - **完整的标签栏导航**: 将所有功能整合到标签式界面中
