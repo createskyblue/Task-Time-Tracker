@@ -54,7 +54,7 @@
 						<span @click="handleTitleClick" class="bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500 cursor-pointer">
 						时探客 Task Time Tracker
 					</span>
-					<img class="mx-auto block pt-2" src="https://img.shields.io/badge/version-250305A-blue">
+					<img class="mx-auto block pt-2" src="https://img.shields.io/badge/version-250305B-blue">
 				</div>
 
 				<!-- 当前选中的项目详情 -->
@@ -68,10 +68,10 @@
 						</h2>
 						<div class="pe-3">
 							<!-- 添加时薪统计显示 -->
-							<span class="text-gray-600 mr-2" v-if="shouldShowSalary && selectedTask.salaryConfig?.actualSalary > 0">
+							<span class="text-gray-600 mr-2" v-if="shouldShowSalary && !salaryDisplayDisabled && selectedTask.salaryConfig?.actualSalary > 0">
 								实际时薪: {{ calculateHourlyRate('actual').current }}
 							</span>
-							<span class="text-gray-600" v-if="shouldShowSalary && selectedTask.salaryConfig?.expectedSalary > 0">
+							<span class="text-gray-600" v-if="shouldShowSalary && !salaryDisplayDisabled && selectedTask.salaryConfig?.expectedSalary > 0">
 								期望时薪: {{ calculateHourlyRate('expected').current }}
 							</span>
 							<span class=" text-blue-600 mr-2 ms-3">{{ getRunningTime(selectedTask.id) }}</span>
@@ -256,7 +256,7 @@
 											<div class="text-lg">{{ calculateTotalDuration(selectedTask.timers) }}</div>
 										</div>
 										<!-- 添加时薪计算显示 -->
-										<div class="stats-item" v-if="shouldShowSalary && selectedTask.salaryConfig?.actualSalary > 0">
+										<div class="stats-item" v-if="shouldShowSalary && !salaryDisplayDisabled && selectedTask.salaryConfig?.actualSalary > 0">
 											<div class="text-gray-600">时薪计算</div>
 											<div class="flex flex-col">
 												<div class="flex items-baseline">
@@ -298,10 +298,16 @@
 										<el-switch v-model="autoClearDescription" active-text="计时结束后自动清空任务说明"
 											inactive-text="计时结束后保留任务说明内容" @change="saveSettings" />
 									</div>
+									
+									<!-- 添加时薪计算器显示控制开关 -->
+									<div v-if="shouldShowSalary">
+										<el-switch v-model="salaryDisplayDisabled" active-text="隐藏时薪计算信息" 
+											inactive-text="显示时薪计算信息" @change="saveSettings" />
+									</div>
 								</div>
 
 								<!-- 薪资计算器设置 -->
-								<div class="mt-4 border-t border-gray-200" v-if="shouldShowSalary">
+								<div class="mt-4 border-t border-gray-200" v-if="shouldShowSalary && !salaryDisplayDisabled">
 									<h3 class="font-medium mb-3 mt-4 ">时薪计算器设置</h3>
 									<div class="grid grid-cols-2 gap-4">
 										<el-form-item label="实际月薪">
@@ -599,6 +605,7 @@ export default {
 			titleClickTimer: null,
 			titleClickTimestamp: null,
 			salaryFeatureUnlocked: false,
+			salaryDisplayDisabled: false, // 添加显示控制标志
 		}
 	},
 	computed: {
@@ -1159,7 +1166,7 @@ export default {
 				const parsed = JSON.parse(settings);
 				this.autoExport = parsed.autoExport ?? true;
 				this.autoClearDescription = parsed.autoClearDescription ?? false;
-				// 可以检查 salaryFeatureUnlocked，但为了安全我们优先使用专用的存储键
+				this.salaryDisplayDisabled = parsed.salaryDisplayDisabled ?? false; // 读取显示控制选项
 			}
 			
 			// 检查薪资功能是否已解锁
@@ -1541,7 +1548,8 @@ export default {
 			localStorage.setItem('taskTimeTracker_settings', JSON.stringify({
 				autoExport: this.autoExport,
 				autoClearDescription: this.autoClearDescription,
-				salaryFeatureUnlocked: this.salaryFeatureUnlocked
+				salaryFeatureUnlocked: this.salaryFeatureUnlocked,
+				salaryDisplayDisabled: this.salaryDisplayDisabled // 保存显示控制选项
 			}));
 		},
 		calculateDayTotal(blocks) {
@@ -1857,7 +1865,7 @@ export default {
 				startDate.setHours(0, 0, 0, 0);
 			}
 
-			// 计算在这个周期内工作的天数和总小时数
+			// 计算在这个���期内工作的天数和总小时数
 			const workDays = new Set();
 			let totalHours = 0;
 
@@ -1986,7 +1994,7 @@ export default {
 			// 存储解锁状态到本地存储
 			localStorage.setItem('taskTimeTracker_salaryUnlocked', 'true');
 			ElMessage.success({
-				message: '🎉 恭喜！时薪计算功能已解锁',
+				message: '🎉 恭喜！时薪计算功能已解锁，你可以随时在设置中开启或关闭显示',
 				duration: 5000
 			});
 		},
