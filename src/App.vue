@@ -2029,39 +2029,85 @@ export default {
 			return message || "工作负荷正常";
 		},
 		
-		// ...existing code...
+		// 处理标题点击事件
+		handleTitleClick() {
+			const now = Date.now();
+			
+			// 如果功能已解锁，不需要计数
+			if (this.salaryFeatureUnlocked) return;
+
+			// 首次点击或超过1分钟，重置计数
+			if (!this.titleClickTimestamp || (now - this.titleClickTimestamp) > 60000) {
+				this.titleClickCount = 1;
+				this.titleClickTimestamp = now;
+				
+				// 设置1分钟后重置计数的定时器
+				clearTimeout(this.titleClickTimer);
+				this.titleClickTimer = setTimeout(() => {
+					this.titleClickCount = 0;
+					this.titleClickTimestamp = null;
+				}, 60000);
+			} else {
+				// 在1分钟内的后续点击
+				this.titleClickCount++;
+				
+				// 检查是否达到解锁条件
+				if (this.titleClickCount >= 60) {
+					this.unlockSalaryFeature();
+				}
+			}
+		},
+
+		// 解锁薪资功能
+		unlockSalaryFeature() {
+			this.salaryFeatureUnlocked = true;
+			// 存储解锁状态到本地存储
+			localStorage.setItem('taskTimeTracker_salaryUnlocked', 'true');
+			ElMessage.success({
+				message: '🎉 恭喜！时薪计算功能已解锁，你可以随时在设置中开启或关闭显示',
+				duration: 5000
+			});
+		},
+
+		// 检查薪资功能是否已解锁
+		checkSalaryFeatureUnlocked() {
+			const unlocked = localStorage.getItem('taskTimeTracker_salaryUnlocked');
+			this.salaryFeatureUnlocked = unlocked === 'true';
+		},
 		
 		// 添加一个 watch 方法，确保配置更改时及时更新计算结果
-		watchSalaryConfig() {
-			if (!this.selectedTask) return;
+		// watchSalaryConfig() {
+		// 	if (!this.selectedTask) return;
 			
-			// 当配置变更时，保存到存储并更新显示
-			this.$watch(
-				() => JSON.stringify(this.selectedTask.salaryConfig),
-				() => {
-					this.saveToStorage();
-					// 强制更新视图
-					this.$forceUpdate();
-				}
-			);
-		}
+		// 	// 当配置变更时，保存到存储并更新显示
+		// 	this.$watch(
+		// 		() => JSON.stringify(this.selectedTask.salaryConfig),
+		// 		() => {
+		// 			this.saveToStorage();
+		// 			// 强制更新视图
+		// 			this.$forceUpdate();
+		// 		}
+		// 	);
+		// }
+
+		
 	},
 	
-	watch: {
-		// ...existing code...
+	// watch: {
+	// 	// ...existing code...
 		
-		// 确保选中任务改变时监听配置变化
-		selectedTask(newTask) {
-			// ...existing code...
+	// 	// 确保选中任务改变时监听配置变化
+	// 	selectedTask(newTask) {
+	// 		// ...existing code...
 			
-			if (newTask) {
-				// 设置配置监听
-				this.$nextTick(() => {
-					this.watchSalaryConfig();
-				});
-			}
-		}
-	},
+	// 		if (newTask) {
+	// 			// 设置配置监听
+	// 			this.$nextTick(() => {
+	// 				this.watchSalaryConfig();
+	// 			});
+	// 		}
+	// 	}
+	// },
 }
 </script>
 
