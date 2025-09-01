@@ -55,7 +55,7 @@
 						class="bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500 cursor-pointer">
 						时探客 Task Time Tracker
 					</span>
-					<img class="mx-auto block pt-2" src="https://img.shields.io/badge/version-250901A-blue">
+					<img class="mx-auto block pt-2" src="https://img.shields.io/badge/version-250901B-blue">
 				</div>
 
 				<!-- 当前选中的项目详情 -->
@@ -520,9 +520,10 @@ ${block.description}`" @click="editEvent(block, date)">
 					<el-color-picker v-model="editingEvent.color" />
 				</el-form-item>
 			</el-form>
-			<template #footer>
+<template #footer>
 				<span class="dialog-footer">
 					<el-button type="danger" @click="deleteEvent">删除</el-button>
+					<el-button @click="aiSummary">导出给AI总结</el-button>
 					<el-button @click="editDialogVisible = false">取消</el-button>
 					<el-button type="primary" @click="saveEventEdit">保存</el-button>
 				</span>
@@ -1435,6 +1436,33 @@ export default {
 				this.editDialogVisible = false;
 			}).catch(() => {
 				ElMessage.info('已取消删除');
+			});
+		},
+		aiSummary() {
+			if (!this.editingEvent) return;
+
+			// 获取时间信息
+			const startTime = this.editingEvent.start;
+			const endTime = this.editingEvent.end;
+			
+			// 计算总耗时
+			const diffInSeconds = Math.floor((endTime - startTime) / 1000);
+			const hours = Math.floor(diffInSeconds / 3600);
+			const minutes = Math.floor((diffInSeconds % 3600) / 60);
+			const seconds = diffInSeconds % 60;
+			const duration = `${hours}小时${minutes}分钟${seconds}秒`;
+
+			// 构造XML格式的字符串
+			const xmlContent = `<开始时间>${startTime.toLocaleString('zh-CN')}</开始时间>
+<结束时间>${endTime.toLocaleString('zh-CN')}</结束时间>
+<总耗时>${duration}</总耗时>
+<详细内容>${this.editingEvent.description || ''}</详细内容>`;
+
+			// 复制到剪贴板
+			navigator.clipboard.writeText(xmlContent).then(() => {
+				ElMessage.success('已复制到剪贴板');
+			}).catch(err => {
+				ElMessage.error('复制失败: ' + err);
 			});
 		},
 		handleRowClick(row, column) {
