@@ -55,7 +55,7 @@
 						class="bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500 cursor-pointer">
 						时探客 Task Time Tracker
 					</span>
-					<img class="mx-auto block pt-2" src="https://img.shields.io/badge/version-250305B-blue">
+					<img class="mx-auto block pt-2" src="https://img.shields.io/badge/version-250901A-blue">
 				</div>
 
 				<!-- 当前选中的项目详情 -->
@@ -510,6 +510,9 @@ ${block.description}`" @click="editEvent(block, date)">
 					<el-date-picker v-model="editingEvent.end" type="datetime" format="YYYY-MM-DD HH:mm:ss"
 						placeholder="选择结束日期时间" />
 				</el-form-item>
+				<el-form-item label="时间总计">
+					<div class="text-gray-600">{{ calculateEventDuration }}</div>
+				</el-form-item>
 				<el-form-item label="描述">
 					<el-input v-model="editingEvent.description" type="textarea" :rows="7" />
 				</el-form-item>
@@ -669,6 +672,27 @@ export default {
 		// 判断是否应该显示薪资功能
 		shouldShowSalary() {
 			return this.salaryFeatureUnlocked;
+		},
+		// 计算编辑事件的持续时间
+		calculateEventDuration() {
+			if (!this.editingEvent || !this.editingEvent.start || !this.editingEvent.end) {
+				return '0小时0分钟0秒';
+			}
+			
+			const start = new Date(this.editingEvent.start);
+			const end = new Date(this.editingEvent.end);
+			
+			// 确保结束时间不早于开始时间
+			if (end < start) {
+				return '结束时间不能早于开始时间';
+			}
+			
+			const diffInSeconds = Math.floor((end - start) / 1000);
+			const hours = Math.floor(diffInSeconds / 3600);
+			const minutes = Math.floor((diffInSeconds % 3600) / 60);
+			const seconds = diffInSeconds % 60;
+			
+			return `${hours}小时${minutes}分钟${seconds}秒`;
 		},
 	},
 	mounted() {
