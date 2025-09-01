@@ -1,7 +1,7 @@
 <template>
 	<el-container>
-		<!-- 左侧项目列表侧边栏 -->
-		<el-aside width="250px" class="border-r fixed-aside border-gray-300">
+<!-- 左侧项目列表侧边栏 -->
+		<el-aside :width="sidebarWidth + 'px'" :class="['border-r fixed-aside border-gray-300 relative', { collapsed: isSidebarCollapsed }]">
 			<div class="sidebar-header p-4">
 				<div class="flex items-center justify-between">
 					<h2 class="text-lg font-medium">项目列表</h2>
@@ -44,6 +44,8 @@
 					</div>
 				</div>
 			</div>
+<!-- 拖拽手柄 -->
+			<div class="sidebar-resize-handle" @mousedown="startResize"></div>
 		</el-aside>
 
 		<!-- 主内容区域 -->
@@ -55,7 +57,7 @@
 						class="bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500 cursor-pointer">
 						时探客 Task Time Tracker
 					</span>
-					<img class="mx-auto block pt-2" src="https://img.shields.io/badge/version-250901B-blue">
+					<img class="mx-auto block pt-2" src="https://img.shields.io/badge/version-250901C-blue">
 				</div>
 
 				<!-- 当前选中的项目详情 -->
@@ -552,7 +554,7 @@ export default {
 		Edit,
 		Delete
 	},
-	data() {
+data() {
 		return {
 			tasks: [],
 			newTaskName: '',
@@ -600,9 +602,12 @@ export default {
 			titleClickTimestamp: null,
 			salaryFeatureUnlocked: false,
 			salaryDisplayDisabled: false, // 添加显示控制标志
+			// 侧边栏宽度
+			sidebarWidth: 250,
+			isResizing: false,
 		}
 	},
-	computed: {
+computed: {
 		timeScaleMarks() {
 			const interval = this.getTimeInterval(this.baseUnitWidth);
 			const marks = [];
@@ -624,6 +629,10 @@ export default {
 				marks.push({ time: minute, label, width });
 			}
 			return marks;
+		},
+		// 判断侧边栏是否应该折叠
+		isSidebarCollapsed() {
+			return this.sidebarWidth < 100; // 当宽度小于100px时折叠
 		},
 		// 添加计算属性来渲染markdown
 		renderedMarkdown() {
@@ -696,9 +705,15 @@ export default {
 			return `${hours}小时${minutes}分钟${seconds}秒`;
 		},
 	},
-	mounted() {
+mounted() {
 		// 生成唯一的标签页ID
 		this.tabId = Date.now().toString() + Math.random().toString().substring(2);
+
+		// 加载保存的侧边栏宽度
+		const savedSidebarWidth = localStorage.getItem('taskTimeTracker_sidebarWidth');
+		if (savedSidebarWidth) {
+			this.sidebarWidth = parseInt(savedSidebarWidth, 10);
+		}
 
 		this.loadFromStorage();
 		this.timerInterval = setInterval(() => {
@@ -719,6 +734,14 @@ export default {
 
 		// 监听storage事件，用于检测多标签页
 		window.addEventListener('storage', this.handleStorageChange);
+
+		// 初始化布局
+		this.$nextTick(() => {
+			const contentWrapper = document.querySelector('.content-wrapper');
+			if (contentWrapper) {
+				contentWrapper.style.marginLeft = this.sidebarWidth + 'px';
+			}
+		});
 
 		// 删除这一行，因为loadFromStorage已经包含了这个逻辑
 		// this.checkSalaryFeatureUnlocked();
@@ -788,7 +811,45 @@ export default {
 			}
 		}
 	},
-	methods: {
+methods: {
+		// 侧边栏拖拽相关方法
+		startResize(e) {
+			this.isResizing = true;
+			this.lastClientX = e.clientX;
+			document.addEventListener('mousemove', this.onResize);
+			document.addEventListener('mouseup', this.stopResize);
+			// 防止文本选择
+			document.body.style.userSelect = 'none';
+			document.body.style.cursor = 'col-resize';
+		},
+		
+		onResize(e) {
+			if (!this.isResizing) return;
+			
+			const deltaX = e.clientX - this.lastClientX;
+			// 允许缩小到更小的宽度，最小50px
+			this.sidebarWidth = Math.max(50, Math.min(800, this.sidebarWidth + deltaX));
+			this.lastClientX = e.clientX;
+			
+			// 保存侧边栏宽度到localStorage
+			localStorage.setItem('taskTimeTracker_sidebarWidth', this.sidebarWidth);
+			
+			// 更新主内容区域的左边距
+			const contentWrapper = document.querySelector('.content-wrapper');
+			if (contentWrapper) {
+				contentWrapper.style.marginLeft = this.sidebarWidth + 'px';
+			}
+		},
+		
+		stopResize() {
+			this.isResizing = false;
+			document.removeEventListener('mousemove', this.onResize);
+			document.removeEventListener('mouseup', this.stopResize);
+			// 恢复文本选择
+			document.body.style.userSelect = '';
+			document.body.style.cursor = '';
+		},
+		
 		addTask() {
 			if (this.newTaskName.trim()) {
 				const newTask = {
@@ -1395,10 +1456,14 @@ export default {
 				this.selectedTask.timers.push(newEvent);
 			}
 
+			// 重新格式化时间块以更新显示
 			this.formattedTimeBlocks = this.formatTimeBlocks(this.selectedTask);
+			// 保存到存储
 			this.saveToStorage();
 
+			// 显示成功消息
 			ElMessage.success(this.editingEventOriginal ? '记录已更新' : '新记录已保存');
+			// 关闭对话框
 			this.editDialogVisible = false;
 		},
 
@@ -2345,6 +2410,38 @@ export default {
 	overflow-y: auto;
 }
 
+/* 当侧边栏宽度过小时隐藏项目列表内容 */
+.el-aside.collapsed .project-list-container,
+.el-aside.collapsed .sidebar-header {
+	display: none;
+}
+
+.sidebar-resize-handle {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 5px;
+	height: 100%;
+	background-color: #e5e7eb;
+	cursor: col-resize;
+	z-index: 1000;
+}
+
+.sidebar-resize-handle:hover {
+	background-color: #9ca3af;
+}
+
+/* 折叠状态下拖拽手柄的样式 */
+.el-aside.collapsed .sidebar-resize-handle {
+	background-color: #e5e7eb;
+	width: 5px;
+}
+
+.project-list {
+	height: 100%;
+	overflow-y: auto;
+}
+
 /* 调整主内容区域的位置 */
 .content-wrapper {
 	margin-left: 250px;
@@ -2355,5 +2452,21 @@ export default {
 	background-color: #f8fafc;
 	border-radius: 0.5rem;
 	border: 1px solid #e2e8f0;
+}
+
+/* 侧边栏拖拽手柄样式 */
+.sidebar-resize-handle {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 5px;
+	height: 100%;
+	background-color: #e5e7eb;
+	cursor: col-resize;
+	z-index: 1000;
+}
+
+.sidebar-resize-handle:hover {
+	background-color: #9ca3af;
 }
 </style>
