@@ -605,6 +605,8 @@ data() {
 			// 侧边栏宽度
 			sidebarWidth: 250,
 			isResizing: false,
+			// 添加防抖定时器
+			descriptionDebounceTimers: {},
 		}
 	},
 computed: {
@@ -786,13 +788,14 @@ mounted() {
 						}
 					}
 				});
-				this.saveToStorage();
+				// 使用防抖保存而不是直接保存
+				this.debounceSaveToStorage();
 			},
 			deep: true
 		},
 		taskMemos: {
 			handler(newMemos) {
-				this.saveToStorage();
+				this.debounceSaveToStorage();
 			},
 			deep: true
 		},
@@ -1205,8 +1208,18 @@ methods: {
 				ElMessage.success('保存成功');
 			}, 1500);
 		},
-
-
+		// 添加防抖保存方法
+		debounceSaveToStorage() {
+			// 清除现有的定时器
+			if (this.saveMshShowTimer) {
+				clearTimeout(this.saveMshShowTimer);
+			}
+			
+			// 设置新的定时器，在5秒后执行保存
+			this.saveMshShowTimer = setTimeout(() => {
+				this.saveToStorage();
+			}, 5000);
+		},
 		loadFromStorage() {
 			const data = localStorage.getItem(this.STORAGE_KEY);
 			if (data) {
