@@ -97,10 +97,108 @@
 							<div class="mb-2 flex justify-between items-center">
 								<span class="text-sm text-gray-500">支持Markdown格式</span>
 							</div>
+							<!-- 添加开始时间和颜色显示，仅在任务进行时显示 -->
+							<div v-if="isTaskRunning(selectedTask.id)" class="mb-2 flex items-center gap-4">
+								<div class="flex items-center">
+									<span class="text-sm text-gray-600 mr-2">开始时间:</span>
+									<el-date-picker
+										v-model="currentRunningTimer.start"
+										type="datetime"
+										size="small"
+										@change="updateTimerStart"
+										placeholder="选择开始时间">
+									</el-date-picker>
+								</div>
+								<div class="flex items-center">
+									<span class="text-sm text-gray-600 mr-2">颜色:</span>
+									<el-color-picker v-model="currentRunningTimer.color" @change="updateTimerColor" size="small" />
+								</div>
+							</div>
 							<div class="flex gap-4 h-96">
 								<div class="flex-1 h-full">
 									<el-input v-model="taskDescriptions[selectedTask.id]" type="textarea"
 										placeholder="请输入任务说明" class="h-full" :input-style="{
+											borderRadius: '0.5rem',
+											border: '0.5pt solid #e5e7eb !important',
+											fontFamily: 'monospace',
+											height: '100%',
+											padding: '1rem'
+										}" />
+								</div>
+								<div class="flex-1 h-full">
+									<el-input v-model="taskDescriptions[selectedTask.id]" type="textarea"
+										placeholder="请输入任务说明" class="h-full" :input-style="{
+											borderRadius: '0.5rem',
+											border: '0.5pt solid #e5e7eb !important',
+											fontFamily: 'monospace',
+											height: '100%',
+											padding: '1rem'
+										}" />
+								</div>
+							</div>
+						</el-tab-pane>
+						<el-tab-pane label="项目备忘录" name="memo">
+							<div class="mb-2 flex justify-between items-center">
+								<span class="text-sm text-gray-500">支持Markdown格式</span>
+							</div>
+							<!-- 添加开始时间和颜色显示，仅在任务进行时显示 -->
+							<div v-if="isTaskRunning(selectedTask.id)" class="mb-2 flex items-center gap-4">
+								<div class="flex items-center">
+									<span class="text-sm text-gray-600 mr-2">开始时间:</span>
+									<el-date-picker
+										v-model="currentRunningTimer.start"
+										type="datetime"
+										size="small"
+										@change="updateTimerStart"
+										placeholder="选择开始时间">
+									</el-date-picker>
+								</div>
+								<div class="flex items-center">
+									<span class="text-sm text-gray-600 mr-2">颜色:</span>
+									<el-color-picker v-model="currentRunningTimer.color" @change="updateTimerColor" size="small" />
+								</div>
+							</div>
+							<div class="flex gap-4 h-96">
+								<div class="flex-1 h-full">
+									<el-input v-model="taskDescriptions[selectedTask.id]" type="textarea"
+										placeholder="请输入任务说明" class="h-full" :input-style="{
+											borderRadius: '0.5rem',
+											border: '0.5pt solid #e5e7eb !important',
+											fontFamily: 'monospace',
+											height: '100%',
+											padding: '1rem'
+										}" />
+								</div>
+								<div class="flex-1 h-full">
+									<el-input v-model="taskDescriptions[selectedTask.id]" type="textarea"
+										placeholder="请输入任务说明" class="h-full" :input-style="{
+											borderRadius: '0.5rem',
+											border: '0.5pt solid #e5e7eb !important',
+											fontFamily: 'monospace',
+											height: '100%',
+											padding: '1rem'
+										}" />
+								</div>
+							</div>
+						</el-tab-pane>
+						<el-tab-pane label="任务日志" name="log">
+							<div class="mb-2 flex justify-between items-center">
+								<span class="text-sm text-gray-500">支持Markdown格式</span>
+							</div>
+							<div class="flex gap-4 h-96">
+								<div class="flex-1 h-full">
+									<el-input v-model="taskLogs[selectedTask.id]" type="textarea"
+										placeholder="请输入任务日志" class="h-full" :input-style="{
+											borderRadius: '0.5rem',
+											border: '0.5pt solid #e5e7eb !important',
+											fontFamily: 'monospace',
+											height: '100%',
+											padding: '1rem'
+										}" />
+								</div>
+								<div class="flex-1 h-full">
+									<el-input v-model="taskLogs[selectedTask.id]" type="textarea"
+										placeholder="请输入任务日志" class="h-full" :input-style="{
 											borderRadius: '0.5rem',
 											border: '0.5pt solid #e5e7eb !important',
 											fontFamily: 'monospace',
@@ -502,7 +600,7 @@ ${block.description}`" @click="editEvent(block, date)">
 
 		<!-- 添加项目对话框 -->
 		<el-dialog v-model="showAddTaskDialog" title="新建项目" width="400px">
-			<el-form @submit.native.prevent="addTask">
+			<el-form @submit.prevent="addTask">
 				<el-form-item label="项目名称">
 					<el-input v-model="newTaskName" placeholder="请输入项目名称" @keyup.enter="addTask" />
 				</el-form-item>
@@ -621,6 +719,7 @@ data() {
 			isResizing: false,
 			// 添加防抖定时器
 			descriptionDebounceTimers: {},
+			taskLogs: {}, // 添加这一行定义taskLogs对象
 			// 分页和日期范围相关变量
 			timelineDateRange: [], // 时间线日期范围
 		}
@@ -975,6 +1074,47 @@ methods: {
 			return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
 		},
 
+		// 处理时间线日期范围变化
+		handleTimelineDateRangeChange(value) {
+			if (value && value.length === 2) {
+				this.timelineDateRange = [
+					value[0],
+					value[1]
+				];
+				// 保存到localStorage
+				localStorage.setItem('taskTimeTracker_timelineDateRange', JSON.stringify(this.timelineDateRange));
+			}
+		},
+
+		// 获取当前运行的计时器
+		currentRunningTimer() {
+			if (!this.selectedTask) return null;
+			return this.selectedTask.timers.find(timer => timer.end === null) || null;
+		},
+		// 更新计时器开始时间
+		updateTimerStart(newStartTime) {
+			if (!this.selectedTask || !this.currentRunningTimer()) return;
+			
+			const timer = this.currentRunningTimer();
+			if (timer && newStartTime) {
+				timer.start = new Date(newStartTime);
+				this.updateTaskModificationTime(this.selectedTask.id);
+				this.saveToStorage();
+				ElMessage.success('开始时间已更新');
+			}
+		},
+		// 更新计时器颜色
+		updateTimerColor(newColor) {
+			if (!this.selectedTask || !this.currentRunningTimer()) return;
+			
+			const timer = this.currentRunningTimer();
+			if (timer && newColor) {
+				timer.color = newColor;
+				this.updateTaskModificationTime(this.selectedTask.id);
+				this.saveToStorage();
+				ElMessage.success('颜色已更新');
+			}
+		},
 		hsvToRgb(h, s, v) {
 			s /= 100;
 			v /= 100;
