@@ -57,7 +57,7 @@
 						class="bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500 cursor-pointer">
 						时探客 Task Time Tracker
 					</span>
-					<img class="mx-auto block pt-2" src="https://img.shields.io/badge/version-251023A-blue">
+					<img class="mx-auto block pt-2" src="https://img.shields.io/badge/version-251024A-blue">
 				</div>
 
 				<!-- 当前选中的项目详情 -->
@@ -856,6 +856,12 @@ computed: {
 			});
 			
 			return result;
+		},
+
+		// 获取当前运行的计时器
+		currentRunningTimer() {
+			if (!this.selectedTask) return null;
+			return this.selectedTask.timers.find(timer => timer.end === null) || null;
 		}
 	},
 mounted() {
@@ -1085,11 +1091,7 @@ methods: {
 			}
 		},
 
-		// 获取当前运行的计时器
-		currentRunningTimer() {
-			if (!this.selectedTask) return null;
-			return this.selectedTask.timers.find(timer => timer.end === null) || null;
-		},
+		
 		// 更新计时器开始时间
 		updateTimerStart(newStartTime) {
 			if (!this.selectedTask || !this.currentRunningTimer()) return;
