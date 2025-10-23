@@ -1,6 +1,6 @@
 <template>
 	<el-container>
-<!-- 左侧项目列表侧边栏 -->
+		<!-- 左侧项目列表侧边栏 -->
 		<el-aside :width="sidebarWidth + 'px'" :class="['border-r fixed-aside border-gray-300 relative', { collapsed: isSidebarCollapsed }]">
 			<div class="sidebar-header p-4">
 				<div class="flex items-center justify-between">
@@ -44,7 +44,7 @@
 					</div>
 				</div>
 			</div>
-<!-- 拖拽手柄 -->
+			<!-- 拖拽手柄 -->
 			<div class="sidebar-resize-handle" @mousedown="startResize"></div>
 		</el-aside>
 
@@ -57,7 +57,7 @@
 						class="bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500 cursor-pointer">
 						时探客 Task Time Tracker
 					</span>
-					<img class="mx-auto block pt-2" src="https://img.shields.io/badge/version-251024A-blue">
+					<img class="mx-auto block pt-2" src="https://img.shields.io/badge/version-251024B-blue">
 				</div>
 
 				<!-- 当前选中的项目详情 -->
@@ -118,87 +118,6 @@
 								<div class="flex-1 h-full">
 									<el-input v-model="taskDescriptions[selectedTask.id]" type="textarea"
 										placeholder="请输入任务说明" class="h-full" :input-style="{
-											borderRadius: '0.5rem',
-											border: '0.5pt solid #e5e7eb !important',
-											fontFamily: 'monospace',
-											height: '100%',
-											padding: '1rem'
-										}" />
-								</div>
-								<div class="flex-1 h-full">
-									<el-input v-model="taskDescriptions[selectedTask.id]" type="textarea"
-										placeholder="请输入任务说明" class="h-full" :input-style="{
-											borderRadius: '0.5rem',
-											border: '0.5pt solid #e5e7eb !important',
-											fontFamily: 'monospace',
-											height: '100%',
-											padding: '1rem'
-										}" />
-								</div>
-							</div>
-						</el-tab-pane>
-						<el-tab-pane label="项目备忘录" name="memo">
-							<div class="mb-2 flex justify-between items-center">
-								<span class="text-sm text-gray-500">支持Markdown格式</span>
-							</div>
-							<!-- 添加开始时间和颜色显示，仅在任务进行时显示 -->
-							<div v-if="isTaskRunning(selectedTask.id)" class="mb-2 flex items-center gap-4">
-								<div class="flex items-center">
-									<span class="text-sm text-gray-600 mr-2">开始时间:</span>
-									<el-date-picker
-										v-model="currentRunningTimer.start"
-										type="datetime"
-										size="small"
-										@change="updateTimerStart"
-										placeholder="选择开始时间">
-									</el-date-picker>
-								</div>
-								<div class="flex items-center">
-									<span class="text-sm text-gray-600 mr-2">颜色:</span>
-									<el-color-picker v-model="currentRunningTimer.color" @change="updateTimerColor" size="small" />
-								</div>
-							</div>
-							<div class="flex gap-4 h-96">
-								<div class="flex-1 h-full">
-									<el-input v-model="taskDescriptions[selectedTask.id]" type="textarea"
-										placeholder="请输入任务说明" class="h-full" :input-style="{
-											borderRadius: '0.5rem',
-											border: '0.5pt solid #e5e7eb !important',
-											fontFamily: 'monospace',
-											height: '100%',
-											padding: '1rem'
-										}" />
-								</div>
-								<div class="flex-1 h-full">
-									<el-input v-model="taskDescriptions[selectedTask.id]" type="textarea"
-										placeholder="请输入任务说明" class="h-full" :input-style="{
-											borderRadius: '0.5rem',
-											border: '0.5pt solid #e5e7eb !important',
-											fontFamily: 'monospace',
-											height: '100%',
-											padding: '1rem'
-										}" />
-								</div>
-							</div>
-						</el-tab-pane>
-						<el-tab-pane label="任务日志" name="log">
-							<div class="mb-2 flex justify-between items-center">
-								<span class="text-sm text-gray-500">支持Markdown格式</span>
-							</div>
-							<div class="flex gap-4 h-96">
-								<div class="flex-1 h-full">
-									<el-input v-model="taskLogs[selectedTask.id]" type="textarea"
-										placeholder="请输入任务日志" class="h-full" :input-style="{
-											borderRadius: '0.5rem',
-											border: '0.5pt solid #e5e7eb !important',
-											fontFamily: 'monospace',
-											height: '100%',
-											padding: '1rem'
-										}" />
-								</div>
-								<div class="flex-1 h-full">
-									<el-input v-model="taskLogs[selectedTask.id]" type="textarea"
-										placeholder="请输入任务日志" class="h-full" :input-style="{
 											borderRadius: '0.5rem',
 											border: '0.5pt solid #e5e7eb !important',
 											fontFamily: 'monospace',
@@ -365,7 +284,7 @@
 											<div class="flex flex-col">
 												<div class="flex items-baseline">
 													<span class="text-lg">实际: {{ calculateHourlyRate('actual').current
-														}}</span>
+													}}</span>
 													<span class="text-sm text-gray-500 mx-2">/</span>
 													<span class="text-sm text-gray-600">上期: {{
 														calculateHourlyRate('actual').previous }}</span>
@@ -373,11 +292,11 @@
 												<div class="flex items-baseline mt-1"
 													v-if="selectedTask.salaryConfig?.expectedSalary > 0">
 													<span class="text-lg">期望: {{ calculateHourlyRate('expected').current
-														}}</span>
+													}}</span>
 													<span class="text-sm text-gray-500 mx-2">/</span>
 													<span class="text-sm text-gray-600">上期: {{
 														calculateHourlyRate('expected').previous
-														}}</span>
+													}}</span>
 												</div>
 												<div class="mt-2" v-if="showWorkloadWarning">
 													<span class="text-red-500 text-sm font-medium">
@@ -485,15 +404,9 @@
 							<el-button @click="deleteTask(selectedTask)" type="danger">删除</el-button>
 						</div>
 						<div class="mb-3">
-							<el-date-picker
-								v-model="timelineDateRange"
-								type="daterange"
-								range-separator="至"
-								start-placeholder="开始日期"
-								end-placeholder="结束日期"
-								value-format="YYYY-MM-DD"
-								@change="handleTimelineDateRangeChange"
-								class="mr-2">
+							<el-date-picker v-model="timelineDateRange" type="daterange" range-separator="至"
+								start-placeholder="开始日期" end-placeholder="结束日期" value-format="YYYY-MM-DD"
+								@change="handleTimelineDateRangeChange" class="mr-2">
 							</el-date-picker>
 						</div>
 						<div class="relative border border-gray-200 rounded-lg overflow-hidden">
@@ -634,7 +547,7 @@ ${block.description}`" @click="editEvent(block, date)">
 					<el-color-picker v-model="editingEvent.color" />
 				</el-form-item>
 			</el-form>
-<template #footer>
+			<template #footer>
 				<span class="dialog-footer">
 					<el-button type="danger" @click="deleteEvent">删除</el-button>
 					<el-button @click="aiSummary">导出给AI总结</el-button>
@@ -666,7 +579,7 @@ export default {
 		Edit,
 		Delete
 	},
-data() {
+	data() {
 		return {
 			tasks: [],
 			newTaskName: '',
@@ -724,7 +637,7 @@ data() {
 			timelineDateRange: [], // 时间线日期范围
 		}
 	},
-computed: {
+	computed: {
 		timeScaleMarks() {
 			const interval = this.getTimeInterval(this.baseUnitWidth);
 			const marks = [];
@@ -805,56 +718,56 @@ computed: {
 			if (!this.editingEvent || !this.editingEvent.start || !this.editingEvent.end) {
 				return '0小时0分钟0秒';
 			}
-			
+
 			const start = new Date(this.editingEvent.start);
 			const end = new Date(this.editingEvent.end);
-			
+
 			// 确保结束时间不早于开始时间
 			if (end < start) {
 				return '结束时间不能早于开始时间';
 			}
-			
+
 			const diffInSeconds = Math.floor((end - start) / 1000);
 			const hours = Math.floor(diffInSeconds / 3600);
 			const minutes = Math.floor((diffInSeconds % 3600) / 60);
 			const seconds = diffInSeconds % 60;
-			
+
 			return `${hours}小时${minutes}分钟${seconds}秒`;
 		},
-		
+
 		// 过滤后的时间块日期列表（基于日期范围）
 		filteredTimeBlocksDates() {
 			if (!this.formattedTimeBlocks) return [];
-			
+
 			// 获取所有日期并按降序排列
 			const allDates = Object.keys(this.formattedTimeBlocks).sort((a, b) => new Date(b) - new Date(a));
-			
+
 			// 如果没有设置日期范围，则返回最近pageSize天的数据
 			if (!this.timelineDateRange || this.timelineDateRange.length !== 2) {
 				return allDates.slice(0, this.pageSize);
 			}
-			
+
 			// 根据日期范围过滤
 			const [startDate, endDate] = this.timelineDateRange.map(date => new Date(date));
 			startDate.setHours(0, 0, 0, 0);
 			endDate.setHours(23, 59, 59, 999); // 结束日期设为当天最后一刻
-			
+
 			return allDates.filter(date => {
 				const currentDate = new Date(date);
 				return currentDate >= startDate && currentDate <= endDate;
 			});
 		},
-		
+
 		// 分页后的时间块
 		paginatedTimeBlocks() {
-			
+
 			const result = {};
 			this.filteredTimeBlocksDates.forEach(date => {
 				if (this.formattedTimeBlocks[date]) {
 					result[date] = this.formattedTimeBlocks[date];
 				}
 			});
-			
+
 			return result;
 		},
 
@@ -864,7 +777,7 @@ computed: {
 			return this.selectedTask.timers.find(timer => timer.end === null) || null;
 		}
 	},
-mounted() {
+	mounted() {
 		// 生成唯一的标签页ID
 		this.tabId = Date.now().toString() + Math.random().toString().substring(2);
 
@@ -901,7 +814,7 @@ mounted() {
 				contentWrapper.style.marginLeft = this.sidebarWidth + 'px';
 			}
 		});
-		
+
 		// 删除这一行，因为loadFromStorage已经包含了这个逻辑
 		// this.checkSalaryFeatureUnlocked();
 	},
@@ -920,8 +833,8 @@ mounted() {
 			this.saveScrollPosition(this.selectedTask.id);
 		}
 	},
-watch: {
-	tasks: {
+	watch: {
+		tasks: {
 			handler() {
 				if (this.selectedTask) {
 					const updatedTask = this.tasks.find(t => t.id === this.selectedTask.id);
@@ -957,27 +870,27 @@ watch: {
 			deep: true
 		},
 
-	selectedTask(newTask, oldTask) {
-		if (oldTask) {
-			// 保存旧项目的滚动位置
-			this.saveScrollPosition(oldTask.id);
-		}
+		selectedTask(newTask, oldTask) {
+			if (oldTask) {
+				// 保存旧项目的滚动位置
+				this.saveScrollPosition(oldTask.id);
+			}
 
-		if (newTask) {
-			
-			// 设置默认日期范围为最近一周
-			const endDate = new Date();
-			const startDate = new Date();
-			startDate.setDate(startDate.getDate() - 7); // 一周七天，包括今天
-			this.timelineDateRange = [
-				this.formatDate(startDate).slice(0, 10),
-				this.formatDate(endDate).slice(0, 10)
-			];
+			if (newTask) {
+
+				// 设置默认日期范围为最近一周
+				const endDate = new Date();
+				const startDate = new Date();
+				startDate.setDate(startDate.getDate() - 7); // 一周七天，包括今天
+				this.timelineDateRange = [
+					this.formatDate(startDate).slice(0, 10),
+					this.formatDate(endDate).slice(0, 10)
+				];
+			}
 		}
-	}
-},
-methods: {
-	// 修复时区问题：使用 toLocaleDateString 替代 toISOString
+	},
+	methods: {
+		// 修复时区问题：使用 toLocaleDateString 替代 toISOString
 		formatDate(date) {
 			const year = date.getFullYear();
 			const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -994,25 +907,25 @@ methods: {
 			document.body.style.userSelect = 'none';
 			document.body.style.cursor = 'col-resize';
 		},
-		
+
 		onResize(e) {
 			if (!this.isResizing) return;
-			
+
 			const deltaX = e.clientX - this.lastClientX;
 			// 允许缩小到更小的宽度，最小50px
 			this.sidebarWidth = Math.max(50, Math.min(800, this.sidebarWidth + deltaX));
 			this.lastClientX = e.clientX;
-			
+
 			// 保存侧边栏宽度到localStorage
 			localStorage.setItem('taskTimeTracker_sidebarWidth', this.sidebarWidth);
-			
+
 			// 更新主内容区域的左边距
 			const contentWrapper = document.querySelector('.content-wrapper');
 			if (contentWrapper) {
 				contentWrapper.style.marginLeft = this.sidebarWidth + 'px';
 			}
 		},
-		
+
 		stopResize() {
 			this.isResizing = false;
 			document.removeEventListener('mousemove', this.onResize);
@@ -1021,7 +934,7 @@ methods: {
 			document.body.style.userSelect = '';
 			document.body.style.cursor = '';
 		},
-		
+
 		addTask() {
 			if (this.newTaskName.trim()) {
 				const newTask = {
@@ -1091,11 +1004,11 @@ methods: {
 			}
 		},
 
-		
+
 		// 更新计时器开始时间
 		updateTimerStart(newStartTime) {
 			if (!this.selectedTask || !this.currentRunningTimer()) return;
-			
+
 			const timer = this.currentRunningTimer();
 			if (timer && newStartTime) {
 				timer.start = new Date(newStartTime);
@@ -1107,7 +1020,7 @@ methods: {
 		// 更新计时器颜色
 		updateTimerColor(newColor) {
 			if (!this.selectedTask || !this.currentRunningTimer()) return;
-			
+
 			const timer = this.currentRunningTimer();
 			if (timer && newColor) {
 				timer.color = newColor;
@@ -1420,7 +1333,7 @@ methods: {
 			if (this.saveMshShowTimer) {
 				clearTimeout(this.saveMshShowTimer);
 			}
-			
+
 			// 设置新的定时器，在5秒后执行保存
 			this.saveMshShowTimer = setTimeout(() => {
 				this.saveToStorage();
@@ -1455,7 +1368,7 @@ methods: {
 				this.taskScrollPositions = parsed.taskScrollPositions || {}; // 加载滚动位置
 				this.splitCrossDayTimers(); // 拆分跨天时间记录
 			}
-			
+
 			// Load settings
 			const settings = localStorage.getItem('taskTimeTracker_settings');
 			if (settings) {
@@ -1469,7 +1382,7 @@ methods: {
 			const unlocked = localStorage.getItem('taskTimeTracker_salaryUnlocked');
 			this.salaryFeatureUnlocked = unlocked === 'true';
 		},
-		
+
 		handleExport(task) {
 			const data = {
 				...task,
@@ -1728,7 +1641,7 @@ methods: {
 			// 获取时间信息
 			const startTime = this.editingEvent.start;
 			const endTime = this.editingEvent.end;
-			
+
 			// 计算总耗时
 			const diffInSeconds = Math.floor((endTime - startTime) / 1000);
 			const hours = Math.floor(diffInSeconds / 3600);
@@ -2236,16 +2149,16 @@ methods: {
 			// 安全检查，确保分母不为零或过小值
 			const workingDays = Math.max(config.workingDays || 1, 1); // 至少1天
 			const dailyHours = Math.max(config.dailyHours || 0.1, 0.1); // 至少0.1小时
-			
+
 			// 标准月工作时长
 			const standardMonthlyHours = workingDays * dailyHours;
-			
+
 			// 计算标准时薪（固定值，取决于设置）
 			const standardHourlyRate = salary / standardMonthlyHours;
 
 			// 计算当前周期的工作负荷
 			const currentPeriod = this.calculatePeriodWorkload('month');
-			
+
 			// 如果没有实际工作记录，返回标准时薪
 			if (currentPeriod.totalHours === 0) {
 				return {
@@ -2259,7 +2172,7 @@ methods: {
 
 			// 格式化返回结果
 			let currentRateText = `¥${actualHourlyRate.toFixed(2)}/小时`;
-			
+
 			// 如果实际时薪低于标准时薪80%，显示红色警告
 			if (actualHourlyRate < standardHourlyRate * 0.8) {
 				currentRateText = `<span class="text-red-500">${currentRateText}</span>`;
@@ -2281,29 +2194,29 @@ methods: {
 			// 安全检查，确保分母不为零
 			const workingDays = Math.max(config.workingDays || 1, 1);
 			const dailyHours = Math.max(config.dailyHours || 0.1, 0.1);
-			
+
 			// 标准月工作时长
 			const standardMonthlyHours = workingDays * dailyHours;
-			
+
 			// 计算标准时薪
 			const standardHourlyRate = config.expectedSalary / standardMonthlyHours;
-			
+
 			// 计算实际时薪
 			const actualHourlyRate = config.actualSalary / Math.max(stats.totalHours, 0.1);
-			
+
 			// 计算工作时间超出比例
 			const overworkPercent = Math.round((stats.averageHoursPerDay / dailyHours - 1) * 100);
-			
+
 			// 计算时薪差距百分比
 			const hourlyRateDiffPercent = Math.round((1 - actualHourlyRate / standardHourlyRate) * 100);
 
 			let message = "";
-			
+
 			// 检查工作时间是否超标
 			if (overworkPercent > 0) {
 				message += `日均工作时长超出${overworkPercent}%`;
 			}
-			
+
 			// 检查时薪是否低于期望
 			if (hourlyRateDiffPercent > 0) {
 				if (message) message += "，";
@@ -2312,11 +2225,11 @@ methods: {
 
 			return message || "工作负荷正常";
 		},
-		
+
 		// 处理标题点击事件
 		handleTitleClick() {
 			const now = Date.now();
-			
+
 			// 如果功能已解锁，不需要计数
 			if (this.salaryFeatureUnlocked) return;
 
@@ -2324,7 +2237,7 @@ methods: {
 			if (!this.titleClickTimestamp || (now - this.titleClickTimestamp) > 60000) {
 				this.titleClickCount = 1;
 				this.titleClickTimestamp = now;
-				
+
 				// 设置1分钟后重置计数的定时器
 				clearTimeout(this.titleClickTimer);
 				this.titleClickTimer = setTimeout(() => {
@@ -2334,7 +2247,7 @@ methods: {
 			} else {
 				// 在1分钟内的后续点击
 				this.titleClickCount++;
-				
+
 				// 检查是否达到解锁条件
 				if (this.titleClickCount >= 60) {
 					this.unlockSalaryFeature();
@@ -2358,11 +2271,11 @@ methods: {
 			const unlocked = localStorage.getItem('taskTimeTracker_salaryUnlocked');
 			this.salaryFeatureUnlocked = unlocked === 'true';
 		},
-		
+
 		// 添加一个 watch 方法，确保配置更改时及时更新计算结果
 		// watchSalaryConfig() {
 		// 	if (!this.selectedTask) return;
-			
+
 		// 	// 当配置变更时，保存到存储并更新显示
 		// 	this.$watch(
 		// 		() => JSON.stringify(this.selectedTask.salaryConfig),
@@ -2374,16 +2287,16 @@ methods: {
 		// 	);
 		// }
 
-		
+
 	},
-	
+
 	// watch: {
 	// 	// ...existing code...
-		
+
 	// 	// 确保选中任务改变时监听配置变化
 	// 	selectedTask(newTask) {
 	// 		// ...existing code...
-			
+
 	// 		if (newTask) {
 	// 			// 设置配置监听
 	// 			this.$nextTick(() => {
