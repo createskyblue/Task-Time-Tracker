@@ -502,7 +502,7 @@ ${block.description}`" @click="editEvent(block, date)">
 
 		<!-- 添加项目对话框 -->
 		<el-dialog v-model="showAddTaskDialog" title="新建项目" width="400px">
-			<el-form @submit.native.prevent="addTask">
+			<el-form @submit.prevent="addTask">
 				<el-form-item label="项目名称">
 					<el-input v-model="newTaskName" placeholder="请输入项目名称" @keyup.enter="addTask" />
 				</el-form-item>
