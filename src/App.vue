@@ -836,6 +836,7 @@ computed: {
 			
 			// 根据日期范围过滤
 			const [startDate, endDate] = this.timelineDateRange.map(date => new Date(date));
+			startDate.setHours(0, 0, 0, 0);
 			endDate.setHours(23, 59, 59, 999); // 结束日期设为当天最后一刻
 			
 			return allDates.filter(date => {
@@ -895,15 +896,6 @@ mounted() {
 			}
 		});
 		
-		// 初始化时间线日期范围为最近一周
-		const endDate = new Date();
-		const startDate = new Date();
-		startDate.setDate(startDate.getDate() - 7); // 一周七天，包括今天
-		this.timelineDateRange = [
-			startDate.toISOString().slice(0, 10),
-			endDate.toISOString().slice(0, 10)
-		];
-
 		// 删除这一行，因为loadFromStorage已经包含了这个逻辑
 		// this.checkSalaryFeatureUnlocked();
 	},
@@ -972,13 +964,20 @@ watch: {
 			const startDate = new Date();
 			startDate.setDate(startDate.getDate() - 7); // 一周七天，包括今天
 			this.timelineDateRange = [
-				startDate.toISOString().slice(0, 10),
-				endDate.toISOString().slice(0, 10)
+				this.formatDate(startDate).slice(0, 10),
+				this.formatDate(endDate).slice(0, 10)
 			];
 		}
 	}
 },
 methods: {
+	// 修复时区问题：使用 toLocaleDateString 替代 toISOString
+		formatDate(date) {
+			const year = date.getFullYear();
+			const month = String(date.getMonth() + 1).padStart(2, '0');
+			const day = String(date.getDate()).padStart(2, '0');
+			return `${year}-${month}-${day}`;
+		},
 		// 侧边栏拖拽相关方法
 		startResize(e) {
 			this.isResizing = true;
