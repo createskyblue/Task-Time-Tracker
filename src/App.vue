@@ -57,7 +57,7 @@
 						class="bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500 cursor-pointer">
 						时探客 Task Time Tracker
 					</span>
-					<img class="mx-auto block pt-2" src="https://img.shields.io/badge/version-250901C-blue">
+					<img class="mx-auto block pt-2" src="https://img.shields.io/badge/version-251023A-blue">
 				</div>
 
 				<!-- 当前选中的项目详情 -->
@@ -371,7 +371,7 @@
 					<div v-if="!selectedTask">
 						<h3 class="text-lg font-medium mb-4">欢迎使用</h3>
 						<div class="text-sm text-gray-500 mt-4">
-							<span>请先选择或者新建“项目”<br><br>*你知道吗？双击项目名称可以重命名</span>
+							<span>请先选择或者新建"项目"<br><br>*你知道吗？双击项目名称可以重命名</span>
 							<span><br>*本项目由人类策划，AI生成，旨在探索AI工作流，不可避免存在代码维护性较差的问题</span>
 						</div>
 						<el-upload class="upload-demo pt-2" action="" :auto-upload="false" :show-file-list="false"
@@ -381,10 +381,22 @@
 					</div>
 					<div v-if="selectedTask">
 						<h3 class="text-lg font-medium mb-4">时间线 ( {{ selectedTask.name || "" }} )</h3>
-						<div class="mb-4">
+						<div class="mb-4 flex flex-wrap items-center gap-2">
 							<el-button type="primary" @click="addNewEvent">新增记录</el-button>
 							<el-button @click.stop="handleExport(selectedTask)" type="success">导出</el-button>
 							<el-button @click="deleteTask(selectedTask)" type="danger">删除</el-button>
+						</div>
+						<div class="mb-3">
+							<el-date-picker
+								v-model="timelineDateRange"
+								type="daterange"
+								range-separator="至"
+								start-placeholder="开始日期"
+								end-placeholder="结束日期"
+								value-format="YYYY-MM-DD"
+								@change="handleTimelineDateRangeChange"
+								class="mr-2">
+							</el-date-picker>
 						</div>
 						<div class="relative border border-gray-200 rounded-lg overflow-hidden">
 							<div @wheel.prevent="handleWheel" @mousedown="startDrag" @mousemove="onDrag"
@@ -404,7 +416,7 @@
 									</div>
 
 									<div class="time-blocks-container">
-										<div v-for="(blocks, date) in formattedTimeBlocks" :key="date"
+										<div v-for="(blocks, date) in paginatedTimeBlocks" :key="date"
 											class="flex my-2.5 items-center border-b border-gray-300">
 											<div class="sticky left-0 py-1 ps-2 text-sm text-gray-700 rounded-md -mt-2 overflow-visible"
 												style="width:120px; background-color: white;">
@@ -453,8 +465,10 @@ ${block.description}`" @click="editEvent(block, date)">
 								</div>
 							</div>
 						</div>
-						<div class="text-sm text-gray-500 mt-4">
-							<span>小提示：鼠标滚轮缩放时间轴，拖拽滚动时间轴</span>
+						<div class="flex justify-between items-center mt-4">
+							<div class="text-sm text-gray-500">
+								<span>小提示：鼠标滚轮缩放时间轴，拖拽滚动时间轴</span>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -607,6 +621,8 @@ data() {
 			isResizing: false,
 			// 添加防抖定时器
 			descriptionDebounceTimers: {},
+			// 分页和日期范围相关变量
+			timelineDateRange: [], // 时间线日期范围
 		}
 	},
 computed: {
@@ -706,6 +722,41 @@ computed: {
 			
 			return `${hours}小时${minutes}分钟${seconds}秒`;
 		},
+		
+		// 过滤后的时间块日期列表（基于日期范围）
+		filteredTimeBlocksDates() {
+			if (!this.formattedTimeBlocks) return [];
+			
+			// 获取所有日期并按降序排列
+			const allDates = Object.keys(this.formattedTimeBlocks).sort((a, b) => new Date(b) - new Date(a));
+			
+			// 如果没有设置日期范围，则返回最近pageSize天的数据
+			if (!this.timelineDateRange || this.timelineDateRange.length !== 2) {
+				return allDates.slice(0, this.pageSize);
+			}
+			
+			// 根据日期范围过滤
+			const [startDate, endDate] = this.timelineDateRange.map(date => new Date(date));
+			endDate.setHours(23, 59, 59, 999); // 结束日期设为当天最后一刻
+			
+			return allDates.filter(date => {
+				const currentDate = new Date(date);
+				return currentDate >= startDate && currentDate <= endDate;
+			});
+		},
+		
+		// 分页后的时间块
+		paginatedTimeBlocks() {
+			
+			const result = {};
+			this.filteredTimeBlocksDates.forEach(date => {
+				if (this.formattedTimeBlocks[date]) {
+					result[date] = this.formattedTimeBlocks[date];
+				}
+			});
+			
+			return result;
+		}
 	},
 mounted() {
 		// 生成唯一的标签页ID
@@ -744,6 +795,15 @@ mounted() {
 				contentWrapper.style.marginLeft = this.sidebarWidth + 'px';
 			}
 		});
+		
+		// 初始化时间线日期范围为最近一周
+		const endDate = new Date();
+		const startDate = new Date();
+		startDate.setDate(startDate.getDate() - 7); // 一周七天，包括今天
+		this.timelineDateRange = [
+			startDate.toISOString().slice(0, 10),
+			endDate.toISOString().slice(0, 10)
+		];
 
 		// 删除这一行，因为loadFromStorage已经包含了这个逻辑
 		// this.checkSalaryFeatureUnlocked();
@@ -763,8 +823,8 @@ mounted() {
 			this.saveScrollPosition(this.selectedTask.id);
 		}
 	},
-	watch: {
-		tasks: {
+watch: {
+	tasks: {
 			handler() {
 				if (this.selectedTask) {
 					const updatedTask = this.tasks.find(t => t.id === this.selectedTask.id);
@@ -800,20 +860,25 @@ mounted() {
 			deep: true
 		},
 
-		selectedTask(newTask, oldTask) {
-			if (oldTask) {
-				// 保存旧项目的滚动位置
-				this.saveScrollPosition(oldTask.id);
-			}
-
-			if (newTask) {
-				// 恢复新项目的滚动位置
-				this.$nextTick(() => {
-					this.restoreScrollPosition(newTask.id);
-				});
-			}
+	selectedTask(newTask, oldTask) {
+		if (oldTask) {
+			// 保存旧项目的滚动位置
+			this.saveScrollPosition(oldTask.id);
 		}
-	},
+
+		if (newTask) {
+			
+			// 设置默认日期范围为最近一周
+			const endDate = new Date();
+			const startDate = new Date();
+			startDate.setDate(startDate.getDate() - 7); // 一周七天，包括今天
+			this.timelineDateRange = [
+				startDate.toISOString().slice(0, 10),
+				endDate.toISOString().slice(0, 10)
+			];
+		}
+	}
+},
 methods: {
 		// 侧边栏拖拽相关方法
 		startResize(e) {
