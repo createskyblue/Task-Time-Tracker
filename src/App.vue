@@ -57,7 +57,7 @@
 						class="bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-violet-500 cursor-pointer">
 						时探客 Task Time Tracker
 					</span>
-					<img class="mx-auto block pt-2" src="https://img.shields.io/badge/version-251024B-blue">
+					<img class="mx-auto block pt-2" src="https://img.shields.io/badge/version-260323A-blue">
 				</div>
 
 				<!-- 当前选中的项目详情 -->
@@ -401,6 +401,8 @@
 						<div class="mb-4 flex flex-wrap items-center gap-2">
 							<el-button type="primary" @click="addNewEvent">新增记录</el-button>
 							<el-button @click.stop="handleExport(selectedTask)" type="success">导出</el-button>
+							<el-button @click.stop="handleExportRange(selectedTask)" type="success">导出时间范围</el-button>
+							<el-button @click.stop="handleCopyRange(selectedTask)" type="success">复制时间范围</el-button>
 							<el-button @click="deleteTask(selectedTask)" type="danger">删除</el-button>
 						</div>
 						<div class="mb-3">
@@ -1391,6 +1393,57 @@ export default {
 			const dataStr = JSON.stringify(data, null, 2);
 			const timestamp = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
 			this.downloadFile(dataStr, `时探客_TaskTimeTracker_Task_${task.name}_${timestamp}.json`, 'application/json');
+		},
+		handleExportRange(task) {
+			if (!task || !this.timelineDateRange || this.timelineDateRange.length !== 2) {
+				ElMessage.error('请先选择时间范围');
+				return;
+			}
+			const [startDate, endDate] = this.timelineDateRange.map(date => new Date(date));
+			startDate.setHours(0, 0, 0, 0);
+			endDate.setHours(23, 59, 59, 999);
+			const filteredTimers = (task.timers || []).filter(timer => {
+				const start = new Date(timer.start);
+				const end = timer.end ? new Date(timer.end) : new Date();
+				return end >= startDate && start <= endDate;
+			});
+			const data = {
+				...task,
+				timers: filteredTimers,
+				developer: 'createskyblue'
+			};
+			const dataStr = JSON.stringify(data, null, 2);
+			const timestamp = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
+			this.downloadFile(
+				dataStr,
+				`时探客_TaskTimeTracker_Task_${task.name}_Range_${this.timelineDateRange[0]}_${this.timelineDateRange[1]}_${timestamp}.json`,
+				'application/json'
+			);
+		},
+		handleCopyRange(task) {
+			if (!task || !this.timelineDateRange || this.timelineDateRange.length !== 2) {
+				ElMessage.error('请先选择时间范围');
+				return;
+			}
+			const [startDate, endDate] = this.timelineDateRange.map(date => new Date(date));
+			startDate.setHours(0, 0, 0, 0);
+			endDate.setHours(23, 59, 59, 999);
+			const filteredTimers = (task.timers || []).filter(timer => {
+				const start = new Date(timer.start);
+				const end = timer.end ? new Date(timer.end) : new Date();
+				return end >= startDate && start <= endDate;
+			});
+			const data = {
+				...task,
+				timers: filteredTimers,
+				developer: 'createskyblue'
+			};
+			const dataStr = JSON.stringify(data, null, 2);
+			navigator.clipboard.writeText(dataStr).then(() => {
+				ElMessage.success('已复制时间范围数据到剪贴板');
+			}).catch(err => {
+				ElMessage.error('复制失败: ' + err);
+			});
 		},
 		handleGlobalExport(format) {
 			if (format === 'json') {
