@@ -1408,7 +1408,8 @@ export default {
 				return end >= startDate && start <= endDate;
 			});
 			const data = {
-				...task,
+				id: task.id,
+				name: task.name,
 				timers: filteredTimers,
 				developer: 'createskyblue'
 			};
@@ -1434,7 +1435,8 @@ export default {
 				return end >= startDate && start <= endDate;
 			});
 			const data = {
-				...task,
+				id: task.id,
+				name: task.name,
 				timers: filteredTimers,
 				developer: 'createskyblue'
 			};
