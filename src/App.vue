@@ -116,8 +116,8 @@
 							</div>
 							<div class="flex gap-4 h-96">
 								<div class="flex-1 h-full">
-									<el-input v-model="taskDescriptions[selectedTask.id]" type="textarea"
-										placeholder="请输入任务说明" class="h-full" :input-style="{
+									<el-input v-model="editingTaskDescription" type="textarea"
+										placeholder="请输入任务说明" class="h-full" @blur="syncTaskDescription" :input-style="{
 											borderRadius: '0.5rem',
 											border: '0.5pt solid #e5e7eb !important',
 											fontFamily: 'monospace',
@@ -591,6 +591,7 @@ export default {
 			baseUnitWidth: 0.002, // 默认0.002rem/秒，约7.2rem/小时
 			scrollContainer: null,
 			taskDescriptions: {},
+			editingTaskDescription: '', // 本地缓冲，避免每打一个字就同步到时间线
 			STORAGE_KEY: 'taskTimeTracker_data',
 			saveMshShowTimer: null,
 			isDragging: false,
@@ -693,11 +694,11 @@ export default {
 
 		// 渲染任务说明的markdown
 		renderedTaskDescription() {
-			if (!this.selectedTask || !this.taskDescriptions[this.selectedTask.id]) {
+			if (!this.selectedTask || !this.editingTaskDescription) {
 				return '';
 			}
 			try {
-				return marked(this.taskDescriptions[this.selectedTask.id] || '');
+				return marked(this.editingTaskDescription || '');
 			} catch (error) {
 				console.error('Markdown parsing error:', error);
 				return '<p>错误：Markdown解析失败</p>';
@@ -850,6 +851,10 @@ export default {
 		},
 		taskDescriptions: {
 			handler(newDescriptions) {
+				// 当外部更新 taskDescriptions 时（如导入），同步到本地缓冲
+				if (this.selectedTask && newDescriptions[this.selectedTask.id] !== undefined) {
+					this.editingTaskDescription = newDescriptions[this.selectedTask.id] || '';
+				}
 				// 遍历所有任务，更新正在计时的描述
 				this.tasks.forEach(task => {
 					const activeTimer = task.timers.find(t => t.end === null);
@@ -879,6 +884,8 @@ export default {
 			}
 
 			if (newTask) {
+				// 初始化本地缓冲，避免每打一个字就同步到时间线
+				this.editingTaskDescription = this.taskDescriptions[newTask.id] || '';
 
 				// 设置默认日期范围为最近一周
 				const endDate = new Date();
@@ -1041,6 +1048,12 @@ export default {
 				g: Math.round(f(3) * 255),
 				b: Math.round(f(1) * 255)
 			};
+		},
+		syncTaskDescription() {
+			// 仅在 blur 时同步到 taskDescriptions，避免每打一个字就触发时间线重新渲染
+			if (this.selectedTask) {
+				this.taskDescriptions[this.selectedTask.id] = this.editingTaskDescription;
+			}
 		},
 		startTimer(taskId) {
 			const task = this.tasks.find(t => t.id === taskId);
